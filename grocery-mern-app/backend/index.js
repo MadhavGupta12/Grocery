@@ -76,13 +76,11 @@ app.listen(PORT, () => {
   console.log("[AutoOrder] Order automation started — runs every 2 minutes");
 
   // Keep-alive ping every 10 minutes to prevent Render free-tier sleep
-  if (process.env.NODE_ENV === "production") {
-    const BACKEND_URL = process.env.RENDER_EXTERNAL_URL || `https://grocery-backend-mz5b.onrender.com`;
-    setInterval(() => {
-      fetch(`${BACKEND_URL}/`)
-        .then(() => console.log("[KeepAlive] Ping sent to prevent sleep"))
-        .catch((err) => console.warn("[KeepAlive] Ping failed:", err.message));
-    }, 10 * 60 * 1000); // every 10 minutes
-    console.log("[KeepAlive] Keep-alive ping scheduled every 10 minutes");
-  }
+  const BACKEND_URL = process.env.RENDER_EXTERNAL_URL || `https://grocery-backend-mz5b.onrender.com`;
+  setInterval(() => {
+    fetch(`${BACKEND_URL}/`)
+      .then(() => console.log("[KeepAlive] Ping sent to prevent sleep"))
+      .catch((err) => console.warn("[KeepAlive] Ping failed:", err.message));
+  }, 10 * 60 * 1000); // every 10 minutes
+  console.log("[KeepAlive] Keep-alive ping scheduled every 10 minutes");
 });
