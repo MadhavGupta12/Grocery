@@ -2,8 +2,14 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import { connectDB } from "./config/connectDB.js";
+import fs from "fs";
 dotenv.config();
+import { connectDB } from "./config/connectDB.js";
+
+// Create uploads directory if it doesn't exist (needed for Render)
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads", { recursive: true });
+}
 import userRoutes from "./routes/user.routes.js";
 import sellerRoutes from "./routes/seller.routes.js";
 import productRoutes from "./routes/product.routes.js";
