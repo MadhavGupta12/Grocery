@@ -5,609 +5,165 @@ import { connectDB } from "./config/connectDB.js";
 
 dotenv.config();
 
-const dummyProducts = [
-  // Vegetables
-  {
-    name: "Potato 500g",
-    price: 25,
-    offerPrice: 20,
-    description: ["Fresh and organic", "Rich in carbohydrates", "Ideal for curries and fries"],
-    category: "Vegetables",
-    image: [
-      "potato_image_1.png",
-      "potato_image_2.png",
-      "potato_image_3.png",
-      "potato_image_4.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Tomato 1kg",
-    price: 40,
-    offerPrice: 35,
-    description: ["Juicy and ripe", "Rich in Vitamin C", "Perfect for salads and sauces"],
-    category: "Vegetables",
-    image: [
-      "tomato_image.png",
-      "tomato_image_2.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Carrot 500g",
-    price: 30,
-    offerPrice: 28,
-    description: ["Sweet and crunchy", "Good for eyesight", "Ideal for juices and salads"],
-    category: "Vegetables",
-    image: [
-      "carrot_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Spinach 500g",
-    price: 18,
-    offerPrice: 15,
-    description: ["Rich in iron", "High in vitamins", "Perfect for soups and salads"],
-    category: "Vegetables",
-    image: [
-      "spinach_image_1.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Onion 500g",
-    price: 22,
-    offerPrice: 19,
-    description: ["Fresh and pungent", "Perfect for cooking", "A kitchen staple"],
-    category: "Vegetables",
-    image: [
-      "onion_image_1.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Broccoli 1pc",
-    price: 60,
-    offerPrice: 50,
-    description: ["High in fiber and protein", "Fresh green broccoli heads", "Perfect for salads and steaming"],
-    category: "Vegetables",
-    image: [
-      "https://images.unsplash.com/photo-1584270354949-c26b0d5b4a0c?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Capsicum Mix 500g",
-    price: 45,
-    offerPrice: 40,
-    description: ["Fresh red, yellow, and green bell peppers", "Rich in antioxidants", "Great for stir-fry"],
-    category: "Vegetables",
-    image: [
-      "capsicum_mix.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Cauliflower 1pc",
-    price: 50,
-    offerPrice: 42,
-    description: ["Farm fresh cauliflower", "Rich in vitamin C and K", "Great for roasted cauliflower or curries"],
-    category: "Vegetables",
-    image: [
-      "cauliflower.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Sweet Corn 2pcs",
-    price: 35,
-    offerPrice: 30,
-    description: ["Golden sweet corn cobs", "Naturally sweet and juicy", "Perfect for boiling, grilling or salads"],
-    category: "Vegetables",
-    image: [
-      "sweet_corn.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Cucumber 500g",
-    price: 25,
-    offerPrice: 20,
-    description: ["Crunchy and hydrating cucumbers", "High water content", "Great for green salads and raita"],
-    category: "Vegetables",
-    image: [
-      "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=400",
-    ],
-    inStock: true,
-  },
+const baseProducts = [
+  // Vegetables (17 items)
+  { name: "Organic Potato 1kg", category: "Vegetables", price: 30, image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400" },
+  { name: "Fresh Tomato 1kg", category: "Vegetables", price: 45, image: "https://images.unsplash.com/photo-1595855759920-86582396756a?w=400" },
+  { name: "Sweet Carrot 500g", category: "Vegetables", price: 35, image: "https://images.unsplash.com/photo-1598170845058-32b996a67f2c?w=400" },
+  { name: "Green Spinach Bunch", category: "Vegetables", price: 20, image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400" },
+  { name: "Red Onion 1kg", category: "Vegetables", price: 25, image: "https://images.unsplash.com/photo-1508747702841-10ef9c87b4d5?w=400" },
+  { name: "Green Broccoli 1pc", category: "Vegetables", price: 65, image: "https://images.unsplash.com/photo-1584270354949-c26b0d5b4a0c?w=400" },
+  { name: "Cauliflower 1pc", category: "Vegetables", price: 55, image: "https://images.unsplash.com/photo-1568584711271-6c929fb49b60?w=400" },
+  { name: "Bell Peppers Mix 3pc", category: "Vegetables", price: 50, image: "https://images.unsplash.com/photo-1563565087-925b487a35c2?w=400" },
+  { name: "Fresh Cucumber 500g", category: "Vegetables", price: 28, image: "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=400" },
+  { name: "Sweet Corn 2pc", category: "Vegetables", price: 40, image: "https://images.unsplash.com/photo-1551754655-cd27e38d20f6?w=400" },
+  { name: "Fresh Ginger 250g", category: "Vegetables", price: 15, image: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=400" },
+  { name: "Garlic Bulbs 200g", category: "Vegetables", price: 18, image: "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?w=400" },
+  { name: "Green Chilli 100g", category: "Vegetables", price: 10, image: "https://images.unsplash.com/photo-1588252303782-cb80119cb665?w=400" },
+  { name: "Fresh Cabbage 1pc", category: "Vegetables", price: 32, image: "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=400" },
+  { name: "Zucchini Green 500g", category: "Vegetables", price: 48, image: "https://images.unsplash.com/photo-1506806732259-39c2d0268443?w=400" },
+  { name: "Yellow Bell Pepper 2pc", category: "Vegetables", price: 42, image: "https://images.unsplash.com/photo-1506806732259-39c2d0268443?w=400" },
+  { name: "Organic Spinach 250g", category: "Vegetables", price: 24, image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400" },
 
-  // Fruits
-  {
-    name: "Apple 1kg",
-    price: 120,
-    offerPrice: 110,
-    description: ["Crisp and juicy", "Rich in fiber", "Boosts immunity", "Organic and farm fresh"],
-    category: "Fruits",
-    image: [
-      "apple_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Orange 1kg",
-    price: 80,
-    offerPrice: 75,
-    description: ["Juicy and sweet", "Rich in Vitamin C", "Perfect for juices"],
-    category: "Fruits",
-    image: [
-      "orange_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Banana 1kg",
-    price: 50,
-    offerPrice: 45,
-    description: ["Sweet and ripe", "High in potassium", "Great for smoothies"],
-    category: "Fruits",
-    image: [
-      "banana_image_1.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Mango 1kg",
-    price: 150,
-    offerPrice: 140,
-    description: ["Sweet and flavorful", "Perfect for smoothies and desserts", "Rich in Vitamin A"],
-    category: "Fruits",
-    image: [
-      "mango_image_1.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Grapes 500g",
-    price: 70,
-    offerPrice: 65,
-    description: ["Fresh and juicy", "Rich in antioxidants", "Perfect for snacking"],
-    category: "Fruits",
-    image: [
-      "grapes_image_1.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Strawberries 250g",
-    price: 90,
-    offerPrice: 80,
-    description: ["Sweet and slightly tart red strawberries", "Packed with vitamins and fiber", "Great for desserts"],
-    category: "Fruits",
-    image: [
-      "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Pineapple 1pc",
-    price: 100,
-    offerPrice: 85,
-    description: ["Sweet tropical pineapple", "Juicy and ready to slice", "Rich in Vitamin C"],
-    category: "Fruits",
-    image: [
-      "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Watermelon 1pc",
-    price: 90,
-    offerPrice: 75,
-    description: ["Sweet and highly hydrating watermelon", "Perfect for hot summer days", "Rich in lycopene"],
-    category: "Fruits",
-    image: [
-      "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Avocado 2pcs",
-    price: 180,
-    offerPrice: 160,
-    description: ["Creamy Hass avocados", "Rich in healthy monounsaturated fats", "Perfect for guacamole or toast"],
-    category: "Fruits",
-    image: [
-      "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Pomegranate 1kg",
-    price: 160,
-    offerPrice: 145,
-    description: ["Juicy ruby-red arils", "Loaded with powerful antioxidants", "Great for snacking or salads"],
-    category: "Fruits",
-    image: [
-      "https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=400",
-    ],
-    inStock: true,
-  },
+  // Fruits (17 items)
+  { name: "Red Apple 1kg", category: "Fruits", price: 130, image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400" },
+  { name: "Fresh Orange 1kg", category: "Fruits", price: 85, image: "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?w=400" },
+  { name: "Ripe Banana 1 Dozen", category: "Fruits", price: 55, image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400" },
+  { name: "Alphonso Mango 1kg", category: "Fruits", price: 160, image: "https://images.unsplash.com/photo-1553279768-865429fa0078?w=400" },
+  { name: "Seedless Grapes 500g", category: "Fruits", price: 75, image: "https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=400" },
+  { name: "Strawberries Pack 250g", category: "Fruits", price: 95, image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=400" },
+  { name: "Sweet Pineapple 1pc", category: "Fruits", price: 105, image: "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=400" },
+  { name: "Watermelon 1pc", category: "Fruits", price: 95, image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400" },
+  { name: "Hass Avocado 2pc", category: "Fruits", price: 190, image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400" },
+  { name: "Pomegranate 1kg", category: "Fruits", price: 165, image: "https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=400" },
+  { name: "Blueberries Box 125g", category: "Fruits", price: 140, image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=400" },
+  { name: "Kiwi Fruit 3pc", category: "Fruits", price: 80, image: "https://images.unsplash.com/photo-1585059895524-72359e061381?w=400" },
+  { name: "Fresh Papaya 1pc", category: "Fruits", price: 70, image: "https://images.unsplash.com/photo-1526318896980-cf78c088247c?w=400" },
+  { name: "Sweet Pear 1kg", category: "Fruits", price: 90, image: "https://images.unsplash.com/photo-1514756331096-242fdeb70d4a?w=400" },
+  { name: "Green Lime 250g", category: "Fruits", price: 15, image: "https://images.unsplash.com/photo-1590502593747-42a996133562?w=400" },
+  { name: "Green Apple 1kg", category: "Fruits", price: 120, image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400" },
+  { name: "Sweet Cherry 250g", category: "Fruits", price: 85, image: "https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=400" },
 
-  // Dairy
-  {
-    name: "Fresh Milk 1L",
-    price: 60,
-    offerPrice: 55,
-    description: ["Pure and fresh", "Rich in calcium", "Ideal for tea, coffee, and desserts"],
-    category: "Dairy",
-    image: [
-      "amul_milk_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Paneer 200g",
-    price: 90,
-    offerPrice: 85,
-    description: ["Soft and fresh", "Rich in protein", "Ideal for curries and snacks"],
-    category: "Dairy",
-    image: [
-      "paneer_image.png",
-      "paneer_image_2.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Eggs 12 pcs",
-    price: 90,
-    offerPrice: 85,
-    description: ["Farm fresh", "Rich in protein", "Ideal for breakfast and baking"],
-    category: "Dairy",
-    image: [
-      "eggs_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Cheese 200g",
-    price: 140,
-    offerPrice: 130,
-    description: ["Creamy and delicious", "Perfect for pizzas and sandwiches", "Rich in calcium"],
-    category: "Dairy",
-    image: [
-      "cheese_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Greek Yogurt 500g",
-    price: 110,
-    offerPrice: 95,
-    description: ["Thick and creamy unsweetened Greek yogurt", "High in protein", "Perfect with honey and fruits"],
-    category: "Dairy",
-    image: [
-      "yogurt_image_1.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Salted Butter 500g",
-    price: 180,
-    offerPrice: 165,
-    description: ["Rich and creamy butter", "Perfect for baking and spreading", "Slightly salted"],
-    category: "Dairy",
-    image: [
-      "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Mozzarella Cheese 200g",
-    price: 150,
-    offerPrice: 135,
-    description: ["Classic fresh stretch mozzarella", "Perfect for pizza toppings and salads", "Deliciously mild and creamy"],
-    category: "Dairy",
-    image: [
-      "https://images.unsplash.com/photo-1559561853-084cf17f2882?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Almond Milk 1L",
-    price: 199,
-    offerPrice: 175,
-    description: ["Unsweetened dairy-free almond milk", "Great source of Vitamin E", "Perfect vegan alternative"],
-    category: "Dairy",
-    image: [
-      "https://images.unsplash.com/photo-1553456558-aff63285bdd1?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Fresh Cream 200g",
-    price: 65,
-    offerPrice: 58,
-    description: ["Thick and rich milk cream", "Enhances taste of curries and desserts", "Great for whipping"],
-    category: "Dairy",
-    image: [
-      "https://images.unsplash.com/photo-1528642637335-125916304897?w=400",
-    ],
-    inStock: true,
-  },
+  // Dairy (15 items)
+  { name: "Whole Milk 1L", category: "Dairy", price: 65, image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400" },
+  { name: "Organic Paneer 200g", category: "Dairy", price: 95, image: "https://images.unsplash.com/photo-1628294895550-90057bef8a9d?w=400" },
+  { name: "Fresh Eggs 12pc", category: "Dairy", price: 95, image: "https://images.unsplash.com/photo-1516448424440-9dbca97779c1?w=400" },
+  { name: "Cheddar Cheese 200g", category: "Dairy", price: 145, image: "https://images.unsplash.com/photo-1486299267070-83823f5448dd?w=400" },
+  { name: "Greek Yogurt 500g", category: "Dairy", price: 115, image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400" },
+  { name: "Salted Butter 500g", category: "Dairy", price: 185, image: "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400" },
+  { name: "Mozzarella Cheese 200g", category: "Dairy", price: 155, image: "https://images.unsplash.com/photo-1559561853-084cf17f2882?w=400" },
+  { name: "Almond Milk 1L", category: "Dairy", price: 210, image: "https://images.unsplash.com/photo-1553456558-aff63285bdd1?w=400" },
+  { name: "Fresh Cream 200ml", category: "Dairy", price: 70, image: "https://images.unsplash.com/photo-1528642637335-125916304897?w=400" },
+  { name: "Soy Milk Organic 1L", category: "Dairy", price: 180, image: "https://images.unsplash.com/photo-1622484211148-716598e04141?w=400" },
+  { name: "Cottage Cheese 250g", category: "Dairy", price: 85, image: "https://images.unsplash.com/photo-1552763421-2e6f470a1a0d?w=400" },
+  { name: "Sour Cream 200g", category: "Dairy", price: 75, image: "https://images.unsplash.com/photo-1516448424440-9dbca97779c1?w=400" },
+  { name: "Buttermilk Fresh 1L", category: "Dairy", price: 40, image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=400" },
+  { name: "Whipped Cream Spray", category: "Dairy", price: 120, image: "https://images.unsplash.com/photo-1560155016-bd4879ae8f21?w=400" },
+  { name: "Pure Ghee 1L", category: "Dairy", price: 650, image: "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400" },
 
-  // Drinks
-  {
-    name: "Coca-Cola 1.5L",
-    price: 80,
-    offerPrice: 75,
-    description: ["Refreshing and fizzy", "Perfect for parties", "Best served chilled"],
-    category: "Drinks",
-    image: [
-      "coca_cola_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Pepsi 1.5L",
-    price: 78,
-    offerPrice: 73,
-    description: ["Chilled and refreshing", "Perfect for celebrations", "Best served cold"],
-    category: "Drinks",
-    image: [
-      "pepsi_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Orange Juice 1L",
-    price: 120,
-    offerPrice: 110,
-    description: ["Fresh squeezed", "Rich in Vitamin C", "No added sugar"],
-    category: "Drinks",
-    image: [
-      "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Green Tea Pack (25 bags)",
-    price: 150,
-    offerPrice: 130,
-    description: ["Antioxidant-rich green tea bags", "100% natural green tea leaves", "Calming and refreshing"],
-    category: "Drinks",
-    image: [
-      "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Sparkling Water 500ml",
-    price: 45,
-    offerPrice: 35,
-    description: ["Crisp and zero-calorie sparkling water", "Perfect alternative to sodas", "Best served chilled"],
-    category: "Drinks",
-    image: [
-      "sprite_image_1.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Cold Brew Coffee 250ml",
-    price: 110,
-    offerPrice: 95,
-    description: ["Steeped overnight for maximum smoothness", "Bold and strong black coffee", "Ready to drink"],
-    category: "Drinks",
-    image: [
-      "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Lemon Iced Tea 1L",
-    price: 99,
-    offerPrice: 85,
-    description: ["Classic iced tea brewed with lemon extracts", "Sweet and refreshing", "Best served over ice"],
-    category: "Drinks",
-    image: [
-      "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400",
-    ],
-    inStock: true,
-  },
+  // Drinks (14 items)
+  { name: "Coca-Cola 1.5L", category: "Drinks", price: 85, image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400" },
+  { name: "Pepsi Cola 1.5L", category: "Drinks", price: 80, image: "https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=400" },
+  { name: "Orange Juice 1L", category: "Drinks", price: 125, image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400" },
+  { name: "Green Tea Pack (25 Bags)", category: "Drinks", price: 155, image: "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=400" },
+  { name: "Sparkling Water 500ml", category: "Drinks", price: 50, image: "https://images.unsplash.com/photo-1603266759536-4d455c54649e?w=400" },
+  { name: "Cold Brew Coffee 250ml", category: "Drinks", price: 115, image: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=400" },
+  { name: "Lemon Iced Tea 1L", category: "Drinks", price: 105, image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400" },
+  { name: "Apple Cider 1L", category: "Drinks", price: 140, image: "https://images.unsplash.com/photo-1559525347-fe95733562?w=400" },
+  { name: "Coconut Water 500ml", category: "Drinks", price: 60, image: "https://images.unsplash.com/photo-1543362906-acfc16c67564?w=400" },
+  { name: "Tomato Juice 1L", category: "Drinks", price: 95, image: "https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400" },
+  { name: "Pineapple Juice 1L", category: "Drinks", price: 110, image: "https://images.unsplash.com/photo-1536882240095-0379873feb4e?w=400" },
+  { name: "Ginger Ale 330ml", category: "Drinks", price: 70, image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400" },
+  { name: "Energy Drink Can", category: "Drinks", price: 120, image: "https://images.unsplash.com/photo-1607349913338-fca6f7fc42d0?w=400" },
+  { name: "Mineral Water 1L", category: "Drinks", price: 20, image: "https://images.unsplash.com/photo-1616118132261-e0c242e2b7e5?w=400" },
 
-  // Grains
-  {
-    name: "Basmati Rice 5kg",
-    price: 550,
-    offerPrice: 520,
-    description: ["Long grain and aromatic", "Perfect for biryani and pulao", "Premium quality"],
-    category: "Grains",
-    image: [
-      "basmati_rice_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Wheat Flour 5kg",
-    price: 250,
-    offerPrice: 230,
-    description: ["High-quality whole wheat", "Soft and fluffy rotis", "Rich in nutrients"],
-    category: "Grains",
-    image: [
-      "wheat_flour_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Brown Rice 1kg",
-    price: 120,
-    offerPrice: 110,
-    description: ["Whole grain and nutritious", "Helps in weight management", "Good source of magnesium"],
-    category: "Grains",
-    image: [
-      "brown_rice_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Organic Oats 1kg",
-    price: 140,
-    offerPrice: 125,
-    description: ["100% whole grain rolled oats", "High in soluble fiber", "Perfect for a healthy breakfast"],
-    category: "Grains",
-    image: [
-      "maggi_oats_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Organic Quinoa 500g",
-    price: 199,
-    offerPrice: 180,
-    description: ["High in protein and gluten-free", "Rich in amino acids", "Perfect grain replacement"],
-    category: "Grains",
-    image: [
-      "quinoa_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Red Lentils (Masoor) 1kg",
-    price: 90,
-    offerPrice: 80,
-    description: ["Premium split red lentils", "Cooks quickly and digests easily", "Essential source of vegan protein"],
-    category: "Grains",
-    image: [
-      "https://images.unsplash.com/photo-1515942900766-b2a8ed0db35f?w=400",
-    ],
-    inStock: true,
-  },
+  // Grains (13 items)
+  { name: "Basmati Rice 5kg", category: "Grains", price: 560, image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400" },
+  { name: "Wheat Flour 5kg", category: "Grains", price: 260, image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400" },
+  { name: "Brown Rice 1kg", category: "Grains", price: 125, image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400" },
+  { name: "Organic Oats 1kg", category: "Grains", price: 145, image: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400" },
+  { name: "Organic Quinoa 500g", category: "Grains", price: 205, image: "https://images.unsplash.com/photo-1515942900766-b2a8ed0db35f?w=400" },
+  { name: "Red Lentils 1kg", category: "Grains", price: 95, image: "https://images.unsplash.com/photo-1515942900766-b2a8ed0db35f?w=400" },
+  { name: "Yellow Moong Dal 1kg", category: "Grains", price: 110, image: "https://images.unsplash.com/photo-1515942900766-b2a8ed0db35f?w=400" },
+  { name: "Chickpeas 1kg", category: "Grains", price: 120, image: "https://images.unsplash.com/photo-1547050605-2f88f82f8a2a?w=400" },
+  { name: "Black Beans 1kg", category: "Grains", price: 130, image: "https://images.unsplash.com/photo-1551462147-ff29053bfc14?w=400" },
+  { name: "Barley Seeds 1kg", category: "Grains", price: 85, image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400" },
+  { name: "Chia Seeds 250g", category: "Grains", price: 150, image: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400" },
+  { name: "Flax Seeds 250g", category: "Grains", price: 90, image: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400" },
+  { name: "White Rice Premium 5kg", category: "Grains", price: 420, image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400" },
 
-  // Bakery
-  {
-    name: "Brown Bread 400g",
-    price: 40,
-    offerPrice: 35,
-    description: ["Soft and healthy", "Made from whole wheat", "Ideal for breakfast and sandwiches"],
-    category: "Bakery",
-    image: [
-      "brown_bread_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Butter Croissant",
-    price: 50,
-    offerPrice: 45,
-    description: ["Flaky and buttery", "Freshly baked", "Perfect for breakfast or snacks"],
-    category: "Bakery",
-    image: [
-      "butter_croissant_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Chocolate Cake 500g",
-    price: 350,
-    offerPrice: 325,
-    description: ["Rich and moist", "Made with premium cocoa", "Ideal for celebrations"],
-    category: "Bakery",
-    image: [
-      "chocolate_cake_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Chocolate Chip Cookies (10pcs)",
-    price: 80,
-    offerPrice: 70,
-    description: ["Crispy edges with soft centers", "Loaded with real chocolate chips", "Freshly baked daily"],
-    category: "Bakery",
-    image: [
-      "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Garlic Bread Sticks",
-    price: 75,
-    offerPrice: 65,
-    description: ["Buttered bread sticks with garlic and herb seasoning", "Crispy on the outside, soft on the inside", "Best served warm"],
-    category: "Bakery",
-    image: [
-      "garlic_bread.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Blueberry Muffins (4pcs)",
-    price: 140,
-    offerPrice: 120,
-    description: ["Freshly baked soft muffins with blueberries", "Sweet and moist crumbs", "Great tea-time snack"],
-    category: "Bakery",
-    image: [
-      "vanilla_muffins_image.png",
-    ],
-    inStock: true,
-  },
+  // Bakery (12 items)
+  { name: "Whole Wheat Bread 400g", category: "Bakery", price: 45, image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400" },
+  { name: "Croissants Butter 4pc", category: "Bakery", price: 120, image: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400" },
+  { name: "Chocolate Cake 500g", category: "Bakery", price: 360, image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400" },
+  { name: "Chocolate Cookies 10pc", category: "Bakery", price: 85, image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=400" },
+  { name: "Garlic Bread Loaf", category: "Bakery", price: 80, image: "https://images.unsplash.com/photo-1573145959290-7db21f8a7d2e?w=400" },
+  { name: "Blueberry Muffins 4pc", category: "Bakery", price: 145, image: "https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=400" },
+  { name: "Bagels Pack 5pc", category: "Bakery", price: 110, image: "https://images.unsplash.com/photo-1585478259715-876acc5be8eb?w=400" },
+  { name: "Burger Buns 4pc", category: "Bakery", price: 50, image: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400" },
+  { name: "Apple Pie 500g", category: "Bakery", price: 280, image: "https://images.unsplash.com/photo-1519869325930-281384150729?w=400" },
+  { name: "Sourdough Bread 500g", category: "Bakery", price: 95, image: "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400" },
+  { name: "Pita Bread Pack 6pc", category: "Bakery", price: 70, image: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400" },
+  { name: "Vanilla Muffins 4pc", category: "Bakery", price: 130, image: "https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=400" },
 
-  // Instant
-  {
-    name: "Maggi Noodles 280g",
-    price: 55,
-    offerPrice: 50,
-    description: ["Instant and easy to cook", "Delicious taste", "Popular among kids and adults"],
-    category: "Instant",
-    image: [
-      "maggi_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Instant Soup 70g",
-    price: 35,
-    offerPrice: 30,
-    description: ["Convenient for on-the-go", "Healthy and nutritious", "Variety of flavors"],
-    category: "Instant",
-    image: [
-      "knorr_soup_image.png",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Pasta Kit 300g",
-    price: 110,
-    offerPrice: 90,
-    description: ["Instant pasta with cheese and tomato sauce mix", "Made in 5 minutes", "Delicious Italian seasoning"],
-    category: "Instant",
-    image: [
-      "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Salted Potato Chips 150g",
-    price: 45,
-    offerPrice: 38,
-    description: ["Thinly sliced crispy potato chips", "Perfectly salted", "Great side-snack for movies and parties"],
-    category: "Instant",
-    image: [
-      "https://images.unsplash.com/photo-1566478989037-eec170784d20?w=400",
-    ],
-    inStock: true,
-  },
-  {
-    name: "Instant Cup Noodles 80g",
-    price: 40,
-    offerPrice: 35,
-    description: ["Just add hot water and eat", "Flavored with delicious spices and dried veggies", "Ideal travel food"],
-    category: "Instant",
-    image: [
-      "yippee_image.png",
-    ],
-    inStock: true,
-  },
+  // Instant (12 items)
+  { name: "Maggi Noodles 280g", category: "Instant", price: 60, image: "https://images.unsplash.com/photo-1612966608967-312ba599102e?w=400" },
+  { name: "Tomato Soup Pack 4pc", category: "Instant", price: 38, image: "https://images.unsplash.com/photo-1547592165-e1d17fed6006?w=400" },
+  { name: "Pasta Kit Italian", category: "Instant", price: 115, image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400" },
+  { name: "Potato Chips Salted 150g", category: "Instant", price: 48, image: "https://images.unsplash.com/photo-1566478989037-eec170784d20?w=400" },
+  { name: "Cup Noodles Spicy 80g", category: "Instant", price: 45, image: "https://images.unsplash.com/photo-1569562211093-4ed0d0758f12?w=400" },
+  { name: "Instant Oatmeal 1kg", category: "Instant", price: 120, image: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400" },
+  { name: "Mac & Cheese Cup", category: "Instant", price: 80, image: "https://images.unsplash.com/photo-1543339494-b4cd4f7ba686?w=400" },
+  { name: "Popcorn Butter Pack", category: "Instant", price: 65, image: "https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=400" },
+  { name: "Instant Ramen Bowl", category: "Instant", price: 110, image: "https://images.unsplash.com/photo-1569562211093-4ed0d0758f12?w=400" },
+  { name: "Corn Flakes Pack 500g", category: "Instant", price: 150, image: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400" },
+  { name: "Muesli Fruit Mix 500g", category: "Instant", price: 220, image: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400" },
+  { name: "Instant Poha Pack 200g", category: "Instant", price: 40, image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?w=400" },
 ];
+
+// Transform baseProducts into database-ready formats
+const dummyProducts = baseProducts.map((p, index) => {
+  const discountRate = 0.85 + (index % 10) * 0.01; // Varying discount (10% to 15%)
+  const offerPrice = Math.round(p.price * discountRate);
+
+  // Generate realistic reviews for first 30 products
+  const reviews = [];
+  if (index < 30) {
+    const reviewers = ["Madhav", "Shreya", "Amit", "Kunal", "Aisha", "Divya", "Rahul", "Sara"];
+    const comments = [
+      "Outstanding quality! Exceeded my expectations.",
+      "Very fresh and delivered super fast.",
+      "Good product, value for money.",
+      "Decent quality, packaging could be better.",
+      "Great taste and extremely fresh!"
+    ];
+    const numReviews = 1 + (index % 4);
+    for (let r = 0; r < numReviews; r++) {
+      reviews.push({
+        userId: new mongoose.Types.ObjectId(),
+        userName: reviewers[(index + r) % reviewers.length],
+        rating: 4 + (r % 2), // 4 or 5 stars
+        comment: comments[(index + r) % comments.length],
+        createdAt: new Date(Date.now() - (r * 24 * 60 * 60 * 1000)),
+      });
+    }
+  }
+
+  return {
+    name: p.name,
+    price: p.price,
+    offerPrice: offerPrice,
+    description: [
+      `Fresh and selected premium ${p.name.toLowerCase()}`,
+      `Handpicked high-quality source from our ${p.category} department`,
+      `Stored under temperature-controlled delivery environment`
+    ],
+    category: p.category,
+    image: [p.image],
+    inStock: index % 20 !== 0, // 95% in stock, others out of stock
+    reviews: reviews,
+  };
+});
 
 const seedDatabase = async () => {
   try {
@@ -616,11 +172,11 @@ const seedDatabase = async () => {
 
     // Clear existing products
     await Product.deleteMany({});
-    console.log("Cleared existing products");
+    console.log("Cleared existing products in database");
 
     // Insert dummy products
     const result = await Product.insertMany(dummyProducts);
-    console.log(`Successfully added ${result.length} products to the database`);
+    console.log(`Successfully added ${result.length} products to the database!`);
 
     process.exit(0);
   } catch (error) {
