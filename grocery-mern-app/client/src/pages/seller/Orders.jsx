@@ -36,7 +36,7 @@ const Orders = () => {
           <div className="flex gap-5">
             <img
               className="w-12 h-12 object-cover opacity-60"
-              src={`http://localhost:5000/images/${order.items[0].product.image[0]}`}
+              src={order.items[0].product.image[0] && (order.items[0].product.image[0].startsWith('http') ? order.items[0].product.image[0] : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/images/${order.items[0].product.image[0]}`)}
               alt="boxIcon"
             />
             <>

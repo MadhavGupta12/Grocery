@@ -35,11 +35,7 @@ const Address = () => {
       toast.error(error.message);
     }
   };
-  useEffect(() => {
-    if (!user) {
-      navigate("/cart");
-    }
-  }, []);
+  // Submit handler handles authentication checks via the backend API call
   return (
     <div className="mt-12 flex flex-col md:flex-row gap-6 p-6 bg-gray-100 rounded-lg shadow-md">
       {/* Left Side: Address Fields */}

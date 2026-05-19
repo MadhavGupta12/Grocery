@@ -157,7 +157,7 @@ const Cart = () => {
               >
                 <img
                   className="max-w-full h-full object-cover"
-                  src={`http://localhost:5000/images/${product.image[0]}`}
+                  src={product.image[0] && (product.image[0].startsWith('http') ? product.image[0] : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/images/${product.image[0]}`)}
                   alt={product.name}
                 />
               </div>
@@ -249,12 +249,21 @@ const Cart = () => {
                 ? `${selectedAddress.street},${selectedAddress.city},${selectedAddress.state},${selectedAddress.country}`
                 : "No Address Found"}
             </p>
-            <button
-              onClick={() => setShowAddress(!showAddress)}
-              className="text-indigo-500 hover:underline cursor-pointer"
-            >
-              Change
-            </button>
+            {selectedAddress ? (
+              <button
+                onClick={() => setShowAddress(!showAddress)}
+                className="text-indigo-500 hover:underline cursor-pointer"
+              >
+                Change
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/add-address")}
+                className="text-indigo-500 hover:underline cursor-pointer"
+              >
+                Add Address
+              </button>
+            )}
             {showAddress && (
               <div className="absolute top-12 py-1 bg-white border border-gray-300 text-sm w-full">
                 {address.map((address, index) => (
