@@ -5,6 +5,24 @@ import toast from "react-hot-toast";
 import axios from "axios";
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
+
+// Attach Bearer Token to headers if cookies are blocked by cross-origin policies
+axios.interceptors.request.use(
+  (config) => {
+    const isSellerRequest = config.url.includes("/seller");
+    const token = isSellerRequest
+      ? localStorage.getItem("mapta_seller_token")
+      : localStorage.getItem("mapta_user_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const AppContext = createContext(null);
 
 export const AppContextProvider = ({ children }) => {

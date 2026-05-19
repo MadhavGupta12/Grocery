@@ -76,6 +76,11 @@ const MyOrders = () => {
                 <div>
                   <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Total Amount</span>
                   <span className="font-black text-primary text-base">${order.amount.toFixed(2)}</span>
+                  {order.couponCode && (
+                    <span className="text-[10px] text-emerald-600 block font-bold mt-0.5">
+                      Saved ${order.discount?.toFixed(2)} ({order.couponCode})
+                    </span>
+                  )}
                 </div>
                 <div>
                   <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Order Status</span>

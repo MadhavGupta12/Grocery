@@ -18,6 +18,8 @@ const SellerLayout = () => {
     try {
       const { data } = await axios.get("/api/seller/logout");
       if (data.success) {
+        localStorage.removeItem("mapta_seller_token");
+        delete axios.defaults.headers.common["Authorization"];
         setIsSeller(false);
         toast.success("Logged out successfully");
         navigate("/");

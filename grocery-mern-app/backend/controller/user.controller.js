@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import Order from "../models/order.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -87,6 +88,7 @@ export const loginUser = async (req, res) => {
     res.status(200).json({
       message: "Logged in successfull",
       success: true,
+      token,
       user: {
         name: user.name,
         email: user.email,
@@ -133,5 +135,28 @@ export const logout = async (req, res) => {
   } catch (error) {
     console.error("Error in logout:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getUserCoupons = async (req, res) => {
+  try {
+    const userId = req.user;
+    const deliveredOrders = await Order.find({ userId, status: "Delivered" });
+    const totalSpending = deliveredOrders.reduce((sum, order) => sum + order.amount, 0);
+
+    const coupons = [
+      { code: "BRONZE10", discount: 10, minSpending: 100, unlocked: totalSpending >= 100, description: "10% off on all orders above $100 spent" },
+      { code: "SILVER20", discount: 20, minSpending: 250, unlocked: totalSpending >= 250, description: "20% off on all orders above $250 spent" },
+      { code: "GOLD30", discount: 30, minSpending: 500, unlocked: totalSpending >= 500, description: "30% off on all orders above $500 spent" }
+    ];
+
+    res.status(200).json({
+      success: true,
+      totalSpending,
+      coupons
+    });
+  } catch (error) {
+    console.error("Error in getUserCoupons:", error);
+    res.status(500).json({ message: "Internal server error", success: false });
   }
 };

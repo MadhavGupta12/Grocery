@@ -35,7 +35,7 @@ const getPayPalAccessToken = async () => {
 export const placeOrderCOD = async (req, res) => {
   try {
     const userId = req.user;
-    const { items, address } = req.body;
+    const { items, address, couponCode } = req.body;
     if (!address || !items || items.length === 0) {
       return res
         .status(400)
@@ -47,8 +47,25 @@ export const placeOrderCOD = async (req, res) => {
       return (await acc) + product.offerPrice * item.quantity;
     }, 0);
 
-    // Add tex charfe 2%
+    // Apply Coupon discount if valid
+    let discountPct = 0;
+    if (couponCode) {
+      const deliveredOrders = await Order.find({ userId, status: "Delivered" });
+      const totalSpending = deliveredOrders.reduce((sum, order) => sum + order.amount, 0);
+      if (couponCode === "BRONZE10" && totalSpending >= 100) discountPct = 10;
+      else if (couponCode === "SILVER20" && totalSpending >= 250) discountPct = 20;
+      else if (couponCode === "GOLD30" && totalSpending >= 500) discountPct = 30;
+    }
+
+    let discountAmount = 0;
+    if (discountPct > 0) {
+      discountAmount = Math.floor(((amount * discountPct) / 100) * 100) / 100;
+      amount -= discountAmount;
+    }
+
+    // Add tax charge 2%
     amount += Math.floor((amount * 2) / 100);
+
     await Order.create({
       userId,
       items,
@@ -56,11 +73,14 @@ export const placeOrderCOD = async (req, res) => {
       amount,
       paymentType: "COD",
       isPaid: false,
+      couponCode: discountPct > 0 ? couponCode : undefined,
+      discount: discountAmount,
     });
     res
       .status(201)
       .json({ message: "Order placed successfully", success: true });
   } catch (error) {
+    console.error("Error in placeOrderCOD:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -99,7 +119,7 @@ export const getAllOrders = async (req, res) => {
 export const createPayPalOrder = async (req, res) => {
   try {
     const userId = req.user;
-    const { items, address } = req.body;
+    const { items, address, couponCode } = req.body;
 
     if (!address || !items || items.length === 0) {
       return res
@@ -112,6 +132,22 @@ export const createPayPalOrder = async (req, res) => {
     for (const item of items) {
       const product = await Product.findById(item.product);
       amount += product.offerPrice * item.quantity;
+    }
+
+    // Apply Coupon discount if valid
+    let discountPct = 0;
+    if (couponCode) {
+      const deliveredOrders = await Order.find({ userId, status: "Delivered" });
+      const totalSpending = deliveredOrders.reduce((sum, order) => sum + order.amount, 0);
+      if (couponCode === "BRONZE10" && totalSpending >= 100) discountPct = 10;
+      else if (couponCode === "SILVER20" && totalSpending >= 250) discountPct = 20;
+      else if (couponCode === "GOLD30" && totalSpending >= 500) discountPct = 30;
+    }
+
+    let discountAmount = 0;
+    if (discountPct > 0) {
+      discountAmount = Math.floor(((amount * discountPct) / 100) * 100) / 100;
+      amount -= discountAmount;
     }
 
     // Add tax 2%
@@ -145,7 +181,7 @@ export const createPayPalOrder = async (req, res) => {
             quantity: item.quantity,
             unit_amount: {
               currency_code: "USD",
-              value: (item.offerPrice / 100).toFixed(2),
+              value: (item.offerPrice / 100).toFixed(2), // We can send standard item price, PayPal will verify the breakdowns sum up. If not, we can adjust.
             },
           })),
         },
@@ -156,7 +192,35 @@ export const createPayPalOrder = async (req, res) => {
       },
     };
 
-    const response = await axios.post(`${PAYPAL_API}/v2/checkout/orders`, paypalOrder, {
+    // To prevent mismatch errors in PayPal items sum vs item_total, let's simplify purchase_units if breakdown is sent, or just avoid items array and send subtotal & tax only.
+    // Yes, sending purchase_units without items array is much safer to avoid any precision mismatch exceptions from PayPal!
+    const simplifiedPaypalOrder = {
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          amount: {
+            currency_code: "USD",
+            value: (totalAmount / 100).toFixed(2),
+            breakdown: {
+              item_total: {
+                currency_code: "USD",
+                value: (amount / 100).toFixed(2),
+              },
+              tax_total: {
+                currency_code: "USD",
+                value: (taxAmount / 100).toFixed(2),
+              },
+            },
+          },
+        },
+      ],
+      application_context: {
+        return_url: `${CLIENT_URL}/verify-payment`,
+        cancel_url: `${CLIENT_URL}/cart`,
+      },
+    };
+
+    const response = await axios.post(`${PAYPAL_API}/v2/checkout/orders`, simplifiedPaypalOrder, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
@@ -174,6 +238,8 @@ export const createPayPalOrder = async (req, res) => {
       paymentType: "PayPal",
       isPaid: false,
       paypalOrderId: orderId,
+      couponCode: discountPct > 0 ? couponCode : undefined,
+      discount: discountAmount,
     });
 
     res.status(201).json({

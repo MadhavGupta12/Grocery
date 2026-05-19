@@ -27,12 +27,18 @@ const Cart = () => {
   const [paymentOption, setPaymentOption] = useState("COD");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const [totalSpending, setTotalSpending] = useState(0);
+  const [coupons, setCoupons] = useState([]);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+
   const getCart = () => {
     let tempArray = [];
     for (const key in cartItems) {
       const product = products.find((product) => product._id === key);
-      product.quantity = cartItems[key];
-      tempArray.push(product);
+      if (product) {
+        product.quantity = cartItems[key];
+        tempArray.push(product);
+      }
     }
     setCartArray(tempArray);
   };
@@ -52,9 +58,23 @@ const Cart = () => {
       toast.error(error.message);
     }
   };
+
+  const fetchCoupons = async () => {
+    try {
+      const { data } = await axios.get("/api/user/coupons");
+      if (data.success) {
+        setTotalSpending(data.totalSpending);
+        setCoupons(data.coupons);
+      }
+    } catch (error) {
+      console.error("Error fetching coupons:", error);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       getAddress();
+      fetchCoupons();
     }
   }, [user]);
 
@@ -64,12 +84,33 @@ const Cart = () => {
     }
   }, [products, cartItems]);
 
+  const applyCoupon = (coupon) => {
+    if (selectedCoupon?.code === coupon.code) {
+      setSelectedCoupon(null);
+      toast.success("Coupon removed");
+    } else {
+      setSelectedCoupon(coupon);
+      toast.success(`Coupon ${coupon.code} applied successfully!`);
+    }
+  };
+
+  const getNextTier = () => {
+    if (totalSpending < 100) {
+      return { tier: "Bronze", target: 100, needed: 100 - totalSpending, pct: Math.min((totalSpending / 100) * 100, 100) };
+    } else if (totalSpending < 250) {
+      return { tier: "Silver", target: 250, needed: 250 - totalSpending, pct: Math.min(((totalSpending - 100) / 150) * 100, 100) };
+    } else if (totalSpending < 500) {
+      return { tier: "Gold", target: 500, needed: 500 - totalSpending, pct: Math.min(((totalSpending - 250) / 250) * 100, 100) };
+    } else {
+      return { tier: "Gold Max", target: 500, needed: 0, pct: 100 };
+    }
+  };
+
   const placeOrder = async () => {
     try {
       if (!selectedAddress) {
         return toast.error("Please select an address");
       }
-      // place order with cod
       if (paymentOption === "COD") {
         const { data } = await axios.post("/api/order/cod", {
           items: cartArray.map((item) => ({
@@ -77,6 +118,7 @@ const Cart = () => {
             quantity: item.quantity,
           })),
           address: selectedAddress._id,
+          couponCode: selectedCoupon ? selectedCoupon.code : undefined,
         });
         if (data.success) {
           toast.success(data.message);
@@ -105,10 +147,10 @@ const Cart = () => {
           quantity: item.quantity,
         })),
         address: selectedAddress._id,
+        couponCode: selectedCoupon ? selectedCoupon.code : undefined,
       });
 
       if (data.success && data.approvalUrl) {
-        // Store order info in localStorage for verification
         localStorage.setItem(
           "pendingOrder",
           JSON.stringify({
@@ -116,7 +158,6 @@ const Cart = () => {
             paypalOrderId: data.paypalOrderId,
           })
         );
-        // Redirect to PayPal approval page
         window.location.href = data.approvalUrl;
       } else {
         toast.error(data.message || "Failed to create PayPal order");
@@ -149,6 +190,14 @@ const Cart = () => {
       </div>
     );
   }
+
+  const subtotal = totalCartAmount();
+  const discountPct = selectedCoupon ? selectedCoupon.discount : 0;
+  const discountAmount = Math.floor(((subtotal * discountPct) / 100) * 100) / 100;
+  const taxableAmount = subtotal - discountAmount;
+  const taxAmount = Math.floor(((taxableAmount * 2) / 100) * 100) / 100;
+  const grandTotal = taxableAmount + taxAmount;
+  const nextTier = getNextTier();
 
   return (
     <div className="flex flex-col lg:flex-row py-8 gap-8 max-w-6xl w-full mx-auto">
@@ -346,6 +395,68 @@ const Cart = () => {
           )}
         </div>
 
+        {/* Loyalty Program Progress Dashboard */}
+        {user && coupons.length > 0 && (
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/5 to-indigo-50 border border-primary/10 mb-6">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-[10px] uppercase font-black tracking-wider text-primary">Spending Rewards</span>
+              <span className="text-[10px] font-bold text-gray-500">Spent: ${totalSpending.toFixed(2)}</span>
+            </div>
+            
+            {nextTier.needed > 0 ? (
+              <div>
+                <p className="text-[11px] font-bold text-gray-700">
+                  Spend <span className="text-primary font-black">${nextTier.needed.toFixed(2)}</span> more to unlock <span className="font-black text-black">{nextTier.tier}</span> Coupon
+                </p>
+                {/* Progress bar */}
+                <div className="w-full bg-gray-200/60 h-2 rounded-full mt-2 overflow-hidden">
+                  <div 
+                    className="bg-primary h-full rounded-full transition-all duration-500" 
+                    style={{ width: `${nextTier.pct}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-[11px] font-black text-emerald-600 flex items-center gap-1">🏆 Max Loyalty Tier Unlocked!</p>
+            )}
+
+            {/* Coupons selection list */}
+            <div className="mt-4 space-y-2">
+              {coupons.map((coupon, idx) => (
+                <div 
+                  key={idx}
+                  onClick={() => coupon.unlocked && applyCoupon(coupon)}
+                  className={`p-2.5 rounded-xl border text-xs flex justify-between items-center transition ${
+                    selectedCoupon?.code === coupon.code 
+                      ? "bg-primary border-primary text-white" 
+                      : coupon.unlocked
+                        ? "bg-white hover:bg-gray-50/50 border-gray-200 text-gray-700 cursor-pointer"
+                        : "bg-gray-50/50 border-gray-100 text-gray-400 opacity-60"
+                  }`}
+                >
+                  <div className="text-left">
+                    <p className="font-black tracking-wider flex items-center gap-1.5">
+                      <span>🎟️</span> {coupon.code}
+                      {selectedCoupon?.code === coupon.code && (
+                        <span className="bg-white/20 text-white font-bold px-1.5 py-0.5 rounded text-[8px] uppercase">Active</span>
+                      )}
+                      {!coupon.unlocked && (
+                        <span className="text-gray-400 text-[9px] font-normal">🔒 Locked</span>
+                      )}
+                    </p>
+                    <p className={`text-[10px] font-medium mt-0.5 ${selectedCoupon?.code === coupon.code ? "text-white/80" : "text-gray-400"}`}>
+                      {coupon.description}
+                    </p>
+                  </div>
+                  <span className="font-black text-sm text-right shrink-0 ml-2">
+                    {coupon.discount}% Off
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Payment Select Cards */}
         <div className="mb-6">
           <span className="text-[10px] uppercase font-black tracking-wider text-gray-400 block mb-2.5">Payment Method</span>
@@ -375,20 +486,26 @@ const Cart = () => {
         <div className="space-y-3 text-xs font-semibold text-gray-500 mb-6 border-t border-gray-50 pt-4">
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <span className="text-black font-bold">${totalCartAmount().toFixed(2)}</span>
+            <span className="text-black font-bold">${subtotal.toFixed(2)}</span>
           </div>
+          {selectedCoupon && (
+            <div className="flex justify-between text-emerald-600 font-bold">
+              <span>Discount ({selectedCoupon.code})</span>
+              <span>-${discountAmount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span>Handling & Delivery</span>
             <span className="text-emerald-600 font-bold">FREE</span>
           </div>
           <div className="flex justify-between">
             <span>GST & Service Tax (2%)</span>
-            <span className="text-black font-bold">${((totalCartAmount() * 2) / 100).toFixed(2)}</span>
+            <span className="text-black font-bold">${taxAmount.toFixed(2)}</span>
           </div>
           <hr className="border-gray-50 my-2" />
           <div className="flex justify-between text-base font-black text-black">
             <span>Grand Total</span>
-            <span className="text-primary text-xl font-black">${(totalCartAmount() + (totalCartAmount() * 2) / 100).toFixed(2)}</span>
+            <span className="text-primary text-xl font-black">${grandTotal.toFixed(2)}</span>
           </div>
         </div>
 
@@ -414,4 +531,5 @@ const Cart = () => {
     </div>
   );
 };
+
 export default Cart;

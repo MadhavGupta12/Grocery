@@ -19,6 +19,10 @@ const SellerLogin = () => {
       });
       if (data.success) {
         setIsSeller(true);
+        if (data.token) {
+          localStorage.setItem("mapta_seller_token", data.token);
+          axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+        }
         navigate("/seller");
       } else {
         toast.error(data.message);
