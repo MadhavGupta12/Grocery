@@ -1,8 +1,3 @@
-databases:
-  - name: grocery-mongodb
-    region: oregon
-    plan: free
-
 services:
   - type: web
     name: grocery-backend
@@ -17,13 +12,27 @@ services:
       - key: PORT
         value: 10000
       - key: MONGO_URI
-        fromDatabase:
-          name: grocery-mongodb
-          property: connectionString
+        value: mongodb://Grocery:Madhav123@ac-j3j5u1h-shard-00-00.g4msiem.mongodb.net:27017,ac-j3j5u1h-shard-00-01.g4msiem.mongodb.net:27017,ac-j3j5u1h-shard-00-02.g4msiem.mongodb.net:27017/grocery-app?ssl=true&replicaSet=atlas-4rltgf-shard-0&authSource=admin&appName=Cluster0
       - key: CLIENT_URL
         value: https://grocery-frontend.onrender.com
       - key: JWT_SECRET
         generateValue: true
+      - key: SELLER_EMAIL
+        sync: false
+      - key: SELLER_PASSWORD
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_MODE
+        value: sandbox
 
   - type: web
     name: grocery-frontend
