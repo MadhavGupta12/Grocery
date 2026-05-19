@@ -18,19 +18,19 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: SELLER_EMAIL
-        sync: false
+        value: admin@gmail.com
       - key: SELLER_PASSWORD
-        sync: false
+        value: admin123
       - key: CLOUDINARY_CLOUD_NAME
-        sync: false
+        value: dpuqnbikq
       - key: CLOUDINARY_API_KEY
-        sync: false
+        value: "475778881531154"
       - key: CLOUDINARY_API_SECRET
-        sync: false
+        value: vRS9Jg_OV86WifoujBAN4G_VYac
       - key: PAYPAL_CLIENT_ID
-        sync: false
+        value: AQLl9Vc69blu6_51iTBMmfGrmkrdkpUE-UzoWsq1zIDbuaJu_5trAzkMMwTNiW4dVmS-acJ-5_m8OTSt
       - key: PAYPAL_CLIENT_SECRET
-        sync: false
+        value: EMpS_bpLChiVCnQKszVkQ7iELtrrX8TkOIiSWqgp9A-5iIIxZQNHXEzqsyfw0FAwz4NnIr-07Zw4zgyn
       - key: PAYPAL_MODE
         value: sandbox
 
