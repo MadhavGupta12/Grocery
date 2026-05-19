@@ -21,22 +21,6 @@ services:
         value: https://grocery-frontend.onrender.com
       - key: JWT_SECRET
         generateValue: true
-      - key: CLOUDINARY_CLOUD_NAME
-        sync: false
-      - key: CLOUDINARY_API_KEY
-        sync: false
-      - key: CLOUDINARY_API_SECRET
-        sync: false
-      - key: PAYPAL_CLIENT_ID
-        sync: false
-      - key: PAYPAL_CLIENT_SECRET
-        sync: false
-      - key: PAYPAL_MODE
-        value: live
-      - key: SELLER_EMAIL
-        sync: false
-      - key: SELLER_PASSWORD
-        sync: false
 
   - type: web
     name: grocery-frontend
@@ -45,8 +29,6 @@ services:
     plan: free
     buildCommand: npm install && npm run build
     publishPath: grocery-mern-app/client/dist
-    staticPublishPath: grocery-mern-app/client/dist
-    pullRequestPreviewsEnabled: true
     envVars:
       - key: VITE_BACKEND_URL
         value: https://grocery-backend.onrender.com
