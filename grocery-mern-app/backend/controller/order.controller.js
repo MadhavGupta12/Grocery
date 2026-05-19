@@ -296,3 +296,36 @@ export const verifyPayPalPayment = async (req, res) => {
     res.status(500).json({ message: "Payment verification failed", success: false });
   }
 };
+
+// Update Order Status (Seller): /api/order/status
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+    
+    const updateData = { status };
+    if (status === "Delivered") {
+      updateData.isPaid = true;
+      updateData.paymentStatus = "completed";
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      updateData,
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      order,
+    });
+  } catch (error) {
+    console.error("Error in updateOrderStatus:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
