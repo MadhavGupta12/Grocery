@@ -1,4 +1,4 @@
-const DEFAULT_BACKEND_URL = "https://grocery-backend.onrender.com";
+const DEFAULT_BACKEND_URL = "https://grocery-backend-mz5b.onrender.com";
 
 const stripTrailingSlash = (value) => {
   if (!value) return "";
