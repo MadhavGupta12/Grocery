@@ -18,6 +18,7 @@ import ProductList from "./pages/admin/ProductList";
 import Orders from "./pages/admin/Orders";
 import Analytics from "./pages/admin/Analytics";
 import VerifyPayment from "./pages/VerifyPayment";
+import Wishlist from "./pages/Wishlist";
 
 const App = () => {
   const isAdminPath = useLocation().pathname.includes("admin");
@@ -36,6 +37,7 @@ const App = () => {
           <Route path="/products/:category" element={<ProductCategory />} />
           <Route path="/product/:category/:id" element={<SingleProduct />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/add-address" element={<Address />} />
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/verify-payment" element={<VerifyPayment />} />

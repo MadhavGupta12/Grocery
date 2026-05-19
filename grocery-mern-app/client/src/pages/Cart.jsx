@@ -396,41 +396,58 @@ const getCart = useCallback(() => {
 
         {/* Loyalty Program Progress Dashboard */}
         {user && coupons.length > 0 && (
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/5 to-indigo-50 border border-primary/10 mb-6">
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-[10px] uppercase font-black tracking-wider text-primary">Spending Rewards</span>
-              <span className="text-[10px] font-bold text-gray-500">Spent: ${totalSpending.toFixed(2)}</span>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/5 to-indigo-50 border border-primary/10 mb-6 relative overflow-hidden">
+            <div className="flex justify-between items-center mb-2.5">
+              <span className="text-[10px] uppercase font-black tracking-wider text-primary">VIP Rewards Tracker</span>
+              <span className="text-[10px] font-extrabold text-gray-700 bg-white border border-gray-100 px-2 py-0.5 rounded-full shadow-2xs">Spent: ${totalSpending.toFixed(2)}</span>
             </div>
-            
-            {nextTier.needed > 0 ? (
-              <div>
-                <p className="text-[11px] font-bold text-gray-700">
-                  Spend <span className="text-primary font-black">${nextTier.needed.toFixed(2)}</span> more to unlock <span className="font-black text-black">{nextTier.tier}</span> Coupon
-                </p>
-                {/* Progress bar */}
-                <div className="w-full bg-gray-200/60 h-2 rounded-full mt-2 overflow-hidden">
-                  <div 
-                    className="bg-primary h-full rounded-full transition-all duration-500" 
-                    style={{ width: `${nextTier.pct}%` }}
-                  />
+
+            {/* Premium Milestones Progress Bar */}
+            <div className="my-5 relative px-1">
+              <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-primary to-indigo-600 h-full rounded-full transition-all duration-700" 
+                  style={{ width: `${Math.min((totalSpending / 500) * 100, 100)}%` }}
+                />
+              </div>
+              
+              {/* Milestones Markers */}
+              <div className="flex justify-between text-[9px] font-black mt-2 text-gray-400">
+                <div className="flex flex-col items-center">
+                  <span className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center -mt-4.5 z-10 transition ${totalSpending >= 100 ? "bg-primary border-white shadow-xs" : "bg-white border-gray-300"}`} />
+                  <span className={`mt-1.5 ${totalSpending >= 100 ? "text-primary font-black" : ""}`}>$100</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center -mt-4.5 z-10 transition ${totalSpending >= 250 ? "bg-indigo-600 border-white shadow-xs" : "bg-white border-gray-300"}`} />
+                  <span className={`mt-1.5 ${totalSpending >= 250 ? "text-indigo-600 font-black" : ""}`}>$250</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center -mt-4.5 z-10 transition ${totalSpending >= 500 ? "bg-emerald-600 border-white shadow-xs" : "bg-white border-gray-300"}`} />
+                  <span className={`mt-1.5 ${totalSpending >= 500 ? "text-emerald-600 font-black" : ""}`}>$500</span>
                 </div>
               </div>
+            </div>
+
+            {nextTier.needed > 0 ? (
+              <p className="text-[11px] font-semibold text-gray-500 mb-4 leading-relaxed">
+                🎟️ Spend <span className="text-primary font-extrabold">${nextTier.needed.toFixed(2)}</span> more to unlock <span className="font-extrabold text-gray-800">{nextTier.tier}</span> tier benefits.
+              </p>
             ) : (
-              <p className="text-[11px] font-black text-emerald-600 flex items-center gap-1">🏆 Max Loyalty Tier Unlocked!</p>
+              <p className="text-[11px] font-black text-emerald-600 mb-4 flex items-center gap-1">🏆 Congratulations! Max loyalty tier benefits unlocked.</p>
             )}
 
             {/* Coupons selection list */}
-            <div className="mt-4 space-y-2">
+            <div className="space-y-2">
               {coupons.map((coupon, idx) => (
                 <div 
                   key={idx}
                   onClick={() => coupon.unlocked && applyCoupon(coupon)}
-                  className={`p-2.5 rounded-xl border text-xs flex justify-between items-center transition ${
+                  className={`p-2.5 rounded-xl border text-xs flex justify-between items-center transition-all duration-200 ${
                     selectedCoupon?.code === coupon.code 
-                      ? "bg-primary border-primary text-white" 
+                      ? "bg-primary border-primary text-white shadow-md scale-[1.02]" 
                       : coupon.unlocked
-                        ? "bg-white hover:bg-gray-50/50 border-gray-200 text-gray-700 cursor-pointer"
-                        : "bg-gray-50/50 border-gray-100 text-gray-400 opacity-60"
+                        ? "bg-white hover:bg-gray-50/50 border-gray-200 text-gray-700 cursor-pointer hover:-translate-y-0.5 shadow-2xs"
+                        : "bg-gray-50/50 border-gray-100 text-gray-400 opacity-60 cursor-not-allowed"
                   }`}
                 >
                   <div className="text-left">
@@ -440,7 +457,7 @@ const getCart = useCallback(() => {
                         <span className="bg-white/20 text-white font-bold px-1.5 py-0.5 rounded text-[8px] uppercase">Active</span>
                       )}
                       {!coupon.unlocked && (
-                        <span className="text-gray-400 text-[9px] font-normal">🔒 Locked</span>
+                        <span className="text-gray-400 text-[8px] font-bold bg-gray-100 px-1 py-0.5 rounded uppercase">🔒 Locked</span>
                       )}
                     </p>
                     <p className={`text-[10px] font-medium mt-0.5 ${selectedCoupon?.code === coupon.code ? "text-white/80" : "text-gray-400"}`}>

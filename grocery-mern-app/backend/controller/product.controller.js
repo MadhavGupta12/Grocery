@@ -1,4 +1,5 @@
 import Product from "../models/product.model.js";
+import User from "../models/user.model.js";
 
 // add product :/api/product/add
 export const addProduct = async (req, res) => {
@@ -79,5 +80,65 @@ export const changeStock = async (req, res) => {
       .json({ success: true, product, message: "Stock updated successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// submit a review: /api/product/:id/review
+export const addProductReview = async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    const productId = req.params.id;
+    const userId = req.user;
+
+    if (!rating || !comment) {
+      return res.status(400).json({ success: false, message: "Rating and comment are required" });
+    }
+
+    const ratingVal = parseInt(rating);
+    if (isNaN(ratingVal) || ratingVal < 1 || ratingVal > 5) {
+      return res.status(400).json({ success: false, message: "Rating must be an integer between 1 and 5" });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Check if user already reviewed this product
+    const existingReviewIndex = product.reviews.findIndex(
+      (r) => r.userId.toString() === userId.toString()
+    );
+
+    if (existingReviewIndex > -1) {
+      // Update existing review
+      product.reviews[existingReviewIndex].rating = ratingVal;
+      product.reviews[existingReviewIndex].comment = comment;
+      product.reviews[existingReviewIndex].createdAt = new Date();
+    } else {
+      // Create new review
+      product.reviews.push({
+        userId,
+        userName: user.name,
+        rating: ratingVal,
+        comment,
+        createdAt: new Date(),
+      });
+    }
+
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Review submitted successfully",
+      reviews: product.reviews,
+    });
+  } catch (error) {
+    console.error("Error in addProductReview:", error);
+    return res.status(500).json({ success: false, message: "Server error while adding review" });
   }
 };

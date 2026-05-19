@@ -15,6 +15,7 @@ const Navbar = () => {
     cartCount,
     totalCartAmount,
     axios,
+    wishlistIds,
   } = useAppContext();
 
   const [displayAddress, setDisplayAddress] = useState("Select Delivery Location");
@@ -158,6 +159,22 @@ useEffect(() => {
                 Login
               </button>
             )}
+
+            {/* Wishlist Icon */}
+            <button
+              onClick={() => navigate("/wishlist")}
+              className="relative p-2 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition cursor-pointer text-gray-600 hover:text-primary flex items-center justify-center"
+              title="My Wishlist"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill={wishlistIds?.length > 0 ? "#ef4444" : "none"} xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" stroke={wishlistIds?.length > 0 ? "#ef4444" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {wishlistIds?.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white shadow-xs">
+                  {wishlistIds.length}
+                </span>
+              )}
+            </button>
 
             {/* Zepto-Style Cart Button */}
             <button

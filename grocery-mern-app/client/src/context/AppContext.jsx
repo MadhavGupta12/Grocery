@@ -33,6 +33,19 @@ export const AppContextProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [wishlistIds, setWishlistIds] = useState([]);
+
+  // Debouncing effect for search queries
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
 
   // check admin status
   const fetchAdmin = async () => {
@@ -43,7 +56,7 @@ export const AppContextProvider = ({ children }) => {
       } else {
         setIsAdmin(false);
       }
-} catch {
+    } catch {
        setIsAdmin(false);
      }
   };
@@ -55,6 +68,7 @@ export const AppContextProvider = ({ children }) => {
       if (data.success) {
         setUser(data.user);
         setCartItems(data.user.cart);
+        setWishlistIds(data.user.wishlist || []);
       } else {
         // Silently ignore if not authenticated
       }
@@ -64,6 +78,27 @@ export const AppContextProvider = ({ children }) => {
       } else {
         toast.error(error.message);
       }
+    }
+  };
+
+  // toggle item in wishlist
+  const toggleWishlist = async (productId) => {
+    if (!user) {
+      toast.error("Please login to save items");
+      setShowUserLogin(true);
+      return;
+    }
+    try {
+      const { data } = await axios.post("/api/user/wishlist/toggle", { productId });
+      if (data.success) {
+        setWishlistIds(data.wishlist);
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error("Error toggling wishlist:", error);
+      toast.error("Failed to update wishlist");
     }
   };
 
@@ -172,6 +207,9 @@ export const AppContextProvider = ({ children }) => {
     removeFromCart,
     searchQuery,
     setSearchQuery,
+    debouncedSearchQuery,
+    wishlistIds,
+    toggleWishlist,
     cartCount,
     totalCartAmount,
     axios,

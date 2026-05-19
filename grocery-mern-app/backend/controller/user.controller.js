@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import Order from "../models/order.model.js";
+import Product from "../models/product.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -157,6 +158,60 @@ export const getUserCoupons = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getUserCoupons:", error);
+    res.status(500).json({ message: "Internal server error", success: false });
+  }
+};
+
+// toggle wishlist item: /api/user/wishlist/toggle
+export const toggleWishlist = async (req, res) => {
+  try {
+    const userId = req.user;
+    const { productId } = req.body;
+    if (!productId) {
+      return res.status(400).json({ message: "Product ID is required", success: false });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found", success: false });
+    }
+
+    const wishlist = user.wishlist || [];
+    const index = wishlist.indexOf(productId);
+
+    if (index > -1) {
+      wishlist.splice(index, 1); // remove
+    } else {
+      wishlist.push(productId); // add
+    }
+
+    user.wishlist = wishlist;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: index > -1 ? "Removed from wishlist" : "Added to wishlist",
+      wishlist: user.wishlist,
+    });
+  } catch (error) {
+    console.error("Error in toggleWishlist:", error);
+    res.status(500).json({ message: "Internal server error", success: false });
+  }
+};
+
+// get user wishlist products: /api/user/wishlist
+export const getWishlist = async (req, res) => {
+  try {
+    const userId = req.user;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found", success: false });
+    }
+
+    const products = await Product.find({ _id: { $in: user.wishlist } });
+    res.status(200).json({ success: true, wishlist: products });
+  } catch (error) {
+    console.error("Error in getWishlist:", error);
     res.status(500).json({ message: "Internal server error", success: false });
   }
 };

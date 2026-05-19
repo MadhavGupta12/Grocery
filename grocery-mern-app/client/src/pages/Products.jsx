@@ -3,19 +3,19 @@ import ProductCard from "../components/ProductCard";
 import { useAppContext } from "../context/AppContext";
 
 const Products = () => {
-  const { products, searchQuery } = useAppContext();
+  const { products, debouncedSearchQuery } = useAppContext();
   const [filteredProducts, setFilteredProducts] = useState([]);
   useEffect(() => {
-    if (searchQuery.length > 0) {
+    if (debouncedSearchQuery.length > 0) {
       setFilteredProducts(
         products.filter((product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase())
+          product.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
         )
       );
     } else {
       setFilteredProducts(products);
     }
-  }, [products, searchQuery]);
+  }, [products, debouncedSearchQuery]);
   return (
     <div className="mt-16">
       <h1 className="text-3xl lg:text-4xl font-medium">All Products</h1>

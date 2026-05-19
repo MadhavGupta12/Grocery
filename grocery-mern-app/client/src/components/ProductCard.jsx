@@ -2,7 +2,13 @@ import { useAppContext } from "../context/AppContext";
 import { getImageUrl } from "../utils/getImageUrl";
 
 const ProductCard = ({ product }) => {
-  const { addToCart, removeFromCart, cartItems, navigate } = useAppContext();
+  const { addToCart, removeFromCart, cartItems, navigate, wishlistIds, toggleWishlist } = useAppContext();
+  
+  const reviews = product?.reviews || [];
+  const averageRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : null;
+
   return (
     product && (
       <div
@@ -18,6 +24,21 @@ const ProductCard = ({ product }) => {
         <div className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-lg shadow-xs flex items-center gap-1 text-[10px] font-black text-gray-800 border border-gray-100/50 z-10">
           <span className="text-yellow-500">⚡</span>
           <span>10 MINS</span>
+        </div>
+
+        {/* Wishlist Heart Toggle */}
+        <div 
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleWishlist(product._id);
+          }}
+          className="absolute top-2.5 right-2.5 bg-white/95 backdrop-blur-xs p-1.5 rounded-full shadow-xs border border-gray-100/50 z-10 hover:scale-110 active:scale-95 transition cursor-pointer flex items-center justify-center"
+        >
+          {wishlistIds?.includes(product._id) ? (
+            <span className="text-red-500 text-sm">❤️</span>
+          ) : (
+            <span className="text-gray-400 text-sm">🤍</span>
+          )}
         </div>
 
         {/* Product Image */}
@@ -36,11 +57,20 @@ const ProductCard = ({ product }) => {
             <h3 className="text-gray-900 font-bold text-sm leading-tight mt-0.5 line-clamp-2 min-h-[2.5rem]">
               {product.name}
             </h3>
-            <div className="flex items-center gap-1 mt-1 text-[11px] text-gray-400 font-medium">
-              <div className="flex items-center text-yellow-400">
-                ★ ★ ★ ★ <span className="text-gray-200">★</span>
-              </div>
-              <span>(4.0)</span>
+            <div className="flex items-center gap-1 mt-1 text-[11px] text-gray-400 font-bold">
+              {averageRating ? (
+                <>
+                  <span className="text-yellow-500">★</span>
+                  <span className="text-gray-700">{averageRating}</span>
+                  <span className="text-gray-400 font-medium">({reviews.length})</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded text-[9px] font-black uppercase">
+                    New Product
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
