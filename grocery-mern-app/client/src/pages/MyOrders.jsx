@@ -7,22 +7,28 @@ const MyOrders = () => {
   const [myOrders, setMyOrders] = useState([]);
   const { axios, user } = useContext(AppContext);
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (isSilent = false) => {
     try {
       const { data } = await axios.get("/api/order/user");
       if (data.success) {
         setMyOrders(data.orders);
-      } else {
+      } else if (!isSilent) {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message);
+      if (!isSilent) {
+        toast.error(error.message);
+      }
     }
   }, [axios]);
 
   useEffect(() => {
     if (user) {
-      fetchOrders();
+      fetchOrders(false);
+      const interval = setInterval(() => {
+        fetchOrders(true);
+      }, 5000); // poll every 5 seconds for real-time delivery updates
+      return () => clearInterval(interval);
     }
   }, [user, fetchOrders]);
 
