@@ -1,3 +1,8 @@
+databases:
+  - name: grocery-mongodb
+    region: oregon
+    plan: free
+
 services:
   - type: web
     name: grocery-backend
@@ -32,8 +37,3 @@ services:
     envVars:
       - key: VITE_BACKEND_URL
         value: https://grocery-backend.onrender.com
-
-databases:
-  - name: grocery-mongodb
-    region: oregon
-    plan: free
