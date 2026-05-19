@@ -12,7 +12,8 @@ export const authAdmin = async (req, res, next) => {
   }
   try {
     const decoded = jwt.verify(adminToken, process.env.JWT_SECRET);
-    if (decoded.email === process.env.ADMIN_EMAIL) {
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.SELLER_EMAIL || "admin@gmail.com";
+    if (decoded.email === adminEmail) {
       return next();
     } else {
       return res.status(403).json({ message: "Forbidden", success: false });
