@@ -17,9 +17,9 @@ services:
         value: "https://grocery-frontend.onrender.com"
       - key: JWT_SECRET
         generateValue: true
-      - key: SELLER_EMAIL
+      - key: ADMIN_EMAIL
         value: "admin@gmail.com"
-      - key: SELLER_PASSWORD
+      - key: ADMIN_PASSWORD
         value: "admin123"
       - key: CLOUDINARY_CLOUD_NAME
         value: "dpuqnbikq"
