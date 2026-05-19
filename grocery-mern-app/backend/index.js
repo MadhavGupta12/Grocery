@@ -40,6 +40,11 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 
+// Health check route
+app.get("/", (req, res) => {
+  res.json({ status: "ok", message: "Grocery API is running" });
+});
+
 // Api endpoints
 app.use("/images", express.static("uploads"));
 app.use("/api/user", userRoutes);
