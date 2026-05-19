@@ -6,13 +6,11 @@ databases:
 services:
   - type: web
     name: grocery-backend
-    runtime: node
+    env: node
     region: oregon
-    plan: free
     buildCommand: npm install
     startCommand: npm start
     rootDir: grocery-mern-app/backend
-    healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
@@ -29,9 +27,8 @@ services:
 
   - type: web
     name: grocery-frontend
-    runtime: static
+    env: static
     region: oregon
-    plan: free
     buildCommand: npm install && npm run build
     publishPath: grocery-mern-app/client/dist
     envVars:
