@@ -24,7 +24,11 @@ const Auth = () => {
       } else {
         toast.error(data.message);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Auth error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
+      toast.error(errorMessage);
+    }
   };
   return (
     <div

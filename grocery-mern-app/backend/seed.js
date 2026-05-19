@@ -94,6 +94,40 @@ const dummyProducts = [
     ],
     inStock: true,
   },
+  {
+    name: "Cauliflower 1pc",
+    price: 50,
+    offerPrice: 42,
+    description: ["Farm fresh cauliflower", "Rich in vitamin C and K", "Great for roasted cauliflower or curries"],
+    category: "Vegetables",
+    image: [
+      "https://images.unsplash.com/photo-1568584711075-3d021a7c3ecf?w=400",
+      "https://images.unsplash.com/photo-151062780277d-3d98c17ecf31?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Sweet Corn 2pcs",
+    price: 35,
+    offerPrice: 30,
+    description: ["Golden sweet corn cobs", "Naturally sweet and juicy", "Perfect for boiling, grilling or salads"],
+    category: "Vegetables",
+    image: [
+      "https://images.unsplash.com/photo-1551754655-cd27e38d20f6?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Cucumber 500g",
+    price: 25,
+    offerPrice: 20,
+    description: ["Crunchy and hydrating cucumbers", "High water content", "Great for green salads and raita"],
+    category: "Vegetables",
+    image: [
+      "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=400",
+    ],
+    inStock: true,
+  },
 
   // Fruits
   {
@@ -181,6 +215,42 @@ const dummyProducts = [
     ],
     inStock: true,
   },
+  {
+    name: "Watermelon 1pc",
+    price: 90,
+    offerPrice: 75,
+    description: ["Sweet and highly hydrating watermelon", "Perfect for hot summer days", "Rich in lycopene"],
+    category: "Fruits",
+    image: [
+      "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400",
+      "https://images.unsplash.com/photo-1589984662646-e7b2e4962f18?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Avocado 2pcs",
+    price: 180,
+    offerPrice: 160,
+    description: ["Creamy Hass avocados", "Rich in healthy monounsaturated fats", "Perfect for guacamole or toast"],
+    category: "Fruits",
+    image: [
+      "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400",
+      "https://images.unsplash.com/photo-1603052875302-d376b7c0638a?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Pomegranate 1kg",
+    price: 160,
+    offerPrice: 145,
+    description: ["Juicy ruby-red arils", "Loaded with powerful antioxidants", "Great for snacking or salads"],
+    category: "Fruits",
+    image: [
+      "https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=400",
+      "https://images.unsplash.com/photo-1601275868399-45bec4f4cd9d?w=400",
+    ],
+    inStock: true,
+  },
 
   // Dairy
   {
@@ -254,6 +324,39 @@ const dummyProducts = [
     ],
     inStock: true,
   },
+  {
+    name: "Mozzarella Cheese 200g",
+    price: 150,
+    offerPrice: 135,
+    description: ["Classic fresh stretch mozzarella", "Perfect for pizza toppings and salads", "Deliciously mild and creamy"],
+    category: "Dairy",
+    image: [
+      "https://images.unsplash.com/photo-1559561853-084cf17f2882?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Almond Milk 1L",
+    price: 199,
+    offerPrice: 175,
+    description: ["Unsweetened dairy-free almond milk", "Great source of Vitamin E", "Perfect vegan alternative"],
+    category: "Dairy",
+    image: [
+      "https://images.unsplash.com/photo-1553456558-aff63285bdd1?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Fresh Cream 200g",
+    price: 65,
+    offerPrice: 58,
+    description: ["Thick and rich milk cream", "Enhances taste of curries and desserts", "Great for whipping"],
+    category: "Dairy",
+    image: [
+      "https://images.unsplash.com/photo-1528642637335-125916304897?w=400",
+    ],
+    inStock: true,
+  },
 
   // Drinks
   {
@@ -315,6 +418,28 @@ const dummyProducts = [
     ],
     inStock: true,
   },
+  {
+    name: "Cold Brew Coffee 250ml",
+    price: 110,
+    offerPrice: 95,
+    description: ["Steeped overnight for maximum smoothness", "Bold and strong black coffee", "Ready to drink"],
+    category: "Drinks",
+    image: [
+      "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Lemon Iced Tea 1L",
+    price: 99,
+    offerPrice: 85,
+    description: ["Classic iced tea brewed with lemon extracts", "Sweet and refreshing", "Best served over ice"],
+    category: "Drinks",
+    image: [
+      "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400",
+    ],
+    inStock: true,
+  },
 
   // Grains
   {
@@ -360,6 +485,28 @@ const dummyProducts = [
     category: "Grains",
     image: [
       "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Organic Quinoa 500g",
+    price: 199,
+    offerPrice: 180,
+    description: ["High in protein and gluten-free", "Rich in amino acids", "Perfect grain replacement"],
+    category: "Grains",
+    image: [
+      "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Red Lentils (Masoor) 1kg",
+    price: 90,
+    offerPrice: 80,
+    description: ["Premium split red lentils", "Cooks quickly and digests easily", "Essential source of vegan protein"],
+    category: "Grains",
+    image: [
+      "https://images.unsplash.com/photo-1515942900766-b2a8ed0db35f?w=400",
     ],
     inStock: true,
   },
@@ -413,6 +560,28 @@ const dummyProducts = [
     ],
     inStock: true,
   },
+  {
+    name: "Garlic Bread Sticks",
+    price: 75,
+    offerPrice: 65,
+    description: ["Buttered bread sticks with garlic and herb seasoning", "Crispy on the outside, soft on the inside", "Best served warm"],
+    category: "Bakery",
+    image: [
+      "https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Blueberry Muffins (4pcs)",
+    price: 140,
+    offerPrice: 120,
+    description: ["Freshly baked soft muffins with blueberries", "Sweet and moist crumbs", "Great tea-time snack"],
+    category: "Bakery",
+    image: [
+      "https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=400",
+    ],
+    inStock: true,
+  },
 
   // Instant
   {
@@ -448,6 +617,28 @@ const dummyProducts = [
     image: [
       "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400",
       "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Salted Potato Chips 150g",
+    price: 45,
+    offerPrice: 38,
+    description: ["Thinly sliced crispy potato chips", "Perfectly salted", "Great side-snack for movies and parties"],
+    category: "Instant",
+    image: [
+      "https://images.unsplash.com/photo-1566478989037-eec170784d20?w=400",
+    ],
+    inStock: true,
+  },
+  {
+    name: "Instant Cup Noodles 80g",
+    price: 40,
+    offerPrice: 35,
+    description: ["Just add hot water and eat", "Flavored with delicious spices and dried veggies", "Ideal travel food"],
+    category: "Instant",
+    image: [
+      "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400",
     ],
     inStock: true,
   },
