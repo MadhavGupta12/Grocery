@@ -14,7 +14,7 @@ services:
       - key: MONGO_URI
         value: "mongodb://Grocery:Madhav123@ac-j3j5u1h-shard-00-00.g4msiem.mongodb.net:27017,ac-j3j5u1h-shard-00-01.g4msiem.mongodb.net:27017,ac-j3j5u1h-shard-00-02.g4msiem.mongodb.net:27017/grocery-app?ssl=true&replicaSet=atlas-4rltgf-shard-0&authSource=admin&appName=Cluster0"
       - key: CLIENT_URL
-        value: "https://grocery-frontend.onrender.com"
+        value: "https://grocery-frontend1.onrender.com"
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_EMAIL
@@ -41,6 +41,10 @@ services:
     rootDir: grocery-mern-app/client
     buildCommand: npm install && npm run build
     publishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_BACKEND_URL
-        value: "https://grocery-backend.onrender.com"
+        value: "https://grocery-backend-mz5b.onrender.com"
