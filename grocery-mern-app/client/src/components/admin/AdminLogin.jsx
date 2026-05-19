@@ -1,29 +1,29 @@
 import toast from "react-hot-toast";
 import { useAppContext } from "../../context/AppContext";
 import React, { useState, useEffect } from "react";
-const SellerLogin = () => {
-  const { isSeller, setIsSeller, navigate, axios } = useAppContext();
+const AdminLogin = () => {
+  const { isAdmin, setIsAdmin, navigate, axios } = useAppContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 useEffect(() => {
-     if (isSeller) {
-       navigate("/seller");
+     if (isAdmin) {
+       navigate("/admin");
      }
-   }, [isSeller, navigate]);
+   }, [isAdmin, navigate]);
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
-      const { data } = await axios.post("/api/seller/login", {
+      const { data } = await axios.post("/api/admin/login", {
         email,
         password,
       });
       if (data.success) {
-        setIsSeller(true);
+        setIsAdmin(true);
         if (data.token) {
-          localStorage.setItem("mapta_seller_token", data.token);
+          localStorage.setItem("mapta_admin_token", data.token);
           axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         }
-        navigate("/seller");
+        navigate("/admin");
       } else {
         toast.error(data.message);
       }
@@ -32,14 +32,14 @@ useEffect(() => {
     }
   };
   return (
-    !isSeller && (
+    !isAdmin && (
       <div className="fixed top-0 left-0 bottom-0 right-0 z-30 flex items-center justify-center  bg-black/50 text-gray-600">
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 m-auto items-start p-8 py-12 w-80 sm:w-[352px] rounded-lg shadow-xl border border-gray-200 bg-white"
         >
           <p className="text-2xl font-medium m-auto">
-            <span className="text-indigo-500">Seller</span>
+            <span className="text-indigo-500">Admin</span>
             Login
           </p>
 
@@ -73,4 +73,4 @@ useEffect(() => {
     )
   );
 };
-export default SellerLogin;
+export default AdminLogin;

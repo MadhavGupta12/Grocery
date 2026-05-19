@@ -8,9 +8,9 @@ axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 // Attach Bearer Token to headers if cookies are blocked by cross-origin policies
 axios.interceptors.request.use(
   (config) => {
-    const isSellerRequest = config.url.includes("/seller");
-    const token = isSellerRequest
-      ? localStorage.getItem("mapta_seller_token")
+    const isAdminRequest = config.url.includes("/admin") || config.url.includes("/product/add-product") || config.url.includes("/product/stock") || config.url.includes("/order/status");
+    const token = isAdminRequest
+      ? localStorage.getItem("mapta_admin_token")
       : localStorage.getItem("mapta_user_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -28,23 +28,23 @@ export const AppContext = createContext(null);
 export const AppContextProvider = ({ children }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [isSeller, setIsSeller] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showUserLogin, setShowUserLogin] = useState(false);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
 
-  // check seller status
-  const fetchSeller = async () => {
+  // check admin status
+  const fetchAdmin = async () => {
     try {
-      const { data } = await axios.get("/api/seller/is-auth");
+      const { data } = await axios.get("/api/admin/is-auth");
       if (data.success) {
-        setIsSeller(true);
+        setIsAdmin(true);
       } else {
-        setIsSeller(false);
+        setIsAdmin(false);
       }
 } catch {
-       setIsSeller(false);
+       setIsAdmin(false);
      }
   };
 
@@ -134,7 +134,7 @@ export const AppContextProvider = ({ children }) => {
     }
   };
   useEffect(() => {
-    fetchSeller();
+    fetchAdmin();
     fetchProducts();
     fetchUser();
   }, []);
@@ -161,8 +161,8 @@ export const AppContextProvider = ({ children }) => {
     navigate,
     user,
     setUser,
-    isSeller,
-    setIsSeller,
+    isAdmin,
+    setIsAdmin,
     showUserLogin,
     setShowUserLogin,
     products,

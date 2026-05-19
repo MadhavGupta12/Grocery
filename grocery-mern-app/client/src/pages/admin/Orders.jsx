@@ -9,9 +9,10 @@ const Orders = () => {
 
   const [orders, setOrders] = useState([]);
   const { axios } = useContext(AppContext);
+
   const fetchOrders = useCallback(async () => {
     try {
-      const { data } = await axios.get("/api/order/seller");
+      const { data } = await axios.get("/api/order/admin");
       if (data.success) {
         setOrders(data.orders);
       } else {
@@ -20,7 +21,7 @@ const Orders = () => {
     } catch (error) {
       toast.error(error.message);
     }
-}, [axios]);
+  }, [axios]);
 
   useEffect(() => {
     fetchOrders();
@@ -53,8 +54,31 @@ const Orders = () => {
     }
   }, [axios]);
 
+  const handleRiderUpdate = useCallback(async (orderId, newRider) => {
+    try {
+      const { data } = await axios.post("/api/order/status", {
+        orderId,
+        rider: newRider,
+      });
+      if (data.success) {
+        toast.success("Rider updated successfully");
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === orderId
+              ? { ...order, rider: newRider }
+              : order
+          )
+        );
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to update rider");
+    }
+  }, [axios]);
+
   return (
-    <div className="md:p-10 p-4 space-y-4">
+    <div className="md:p-10 p-4 space-y-4 w-full">
       <h2 className="text-lg font-medium">Orders List</h2>
       {orders.map((order, index) => (
         <div
@@ -67,22 +91,18 @@ const Orders = () => {
               src={getImageUrl(order.items[0]?.product?.image?.[0]) || boxIcon}
               alt="boxIcon"
             />
-            <>
-              {order.items.map((item, index) => (
-                <div key={index} className="flex flex-col justify-center">
-                  <p className="font-medium">
+            <div className="flex flex-col gap-1">
+              {order.items.map((item, idx) => (
+                <div key={idx} className="flex flex-col justify-center">
+                  <p className="font-medium text-sm">
                     {item.product?.name || "Deleted Product"}{" "}
-                    <span
-                      className={`text-indigo-500 ${
-                        item.quantity < 2 && "hidden"
-                      }`}
-                    >
+                    <span className={`text-indigo-500 ${item.quantity < 2 && "hidden"}`}>
                       x {item.quantity}
                     </span>
                   </p>
                 </div>
               ))}
-            </>
+            </div>
           </div>
 
           <div className="text-sm">
@@ -109,6 +129,17 @@ const Orders = () => {
             <p><span className="font-semibold text-gray-500">Date:</span> {order.orderDate || new Date(order.createdAt).toLocaleDateString()}</p>
             <p><span className="font-semibold text-gray-500">Payment:</span> <span className={`font-bold ${order.isPaid ? 'text-emerald-600' : 'text-amber-600'}`}>{order.isPaid ? "Paid" : "Pending"}</span></p>
             
+            <div className="mt-2 flex flex-col gap-1">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Assign Rider</label>
+              <input
+                type="text"
+                placeholder="Enter rider name"
+                defaultValue={order.rider || ""}
+                onBlur={(e) => handleRiderUpdate(order._id, e.target.value)}
+                className="p-1 border border-gray-300 rounded bg-white text-xs font-bold text-gray-700 focus:border-indigo-500 focus:outline-none"
+              />
+            </div>
+
             <div className="mt-2 flex flex-col gap-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Order Status</label>
               <select

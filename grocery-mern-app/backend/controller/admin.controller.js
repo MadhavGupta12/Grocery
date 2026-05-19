@@ -1,16 +1,16 @@
 import jwt from "jsonwebtoken";
-// seller login :/api/seller/login
-export const sellerLogin = async (req, res) => {
+// admin login :/api/admin/login
+export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (
-      password === process.env.SELLER_PASSWORD &&
-      email === process.env.SELLER_EMAIL
+      password === process.env.ADMIN_PASSWORD &&
+      email === process.env.ADMIN_EMAIL
     ) {
       const token = jwt.sign({ email }, process.env.JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.cookie("sellerToken", token, {
+      res.cookie("adminToken", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
@@ -25,12 +25,12 @@ export const sellerLogin = async (req, res) => {
         .json({ message: "Invalid credentials", success: false });
     }
   } catch (error) {
-    console.error("Error in sellerLogin:", error);
+    console.error("Error in adminLogin:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// check seller auth  : /api/seller/is-auth
+// check admin auth  : /api/admin/is-auth
 export const checkAuth = async (req, res) => {
   try {
     res.status(200).json({
@@ -41,10 +41,10 @@ export const checkAuth = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-// logout seller: /api/seller/logout
-export const sellerLogout = async (req, res) => {
+// logout admin: /api/admin/logout
+export const adminLogout = async (req, res) => {
   try {
-    res.clearCookie("sellerToken", {
+    res.clearCookie("adminToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",

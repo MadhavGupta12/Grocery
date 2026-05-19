@@ -111,12 +111,12 @@ useEffect(() => {
 
           {/* Right Controls */}
           <div className="flex items-center gap-4">
-            {/* Seller Link */}
+            {/* Admin Link */}
             <Link 
-              to="/seller" 
+              to="/admin" 
               className="text-sm font-semibold text-gray-600 hover:text-primary hidden lg:block"
             >
-              Seller Panel
+              Admin Panel
             </Link>
 
             {/* Auth Button */}
@@ -136,10 +136,10 @@ useEffect(() => {
                     📦 My Orders
                   </li>
                   <li
-                    onClick={() => navigate("/seller")}
+                    onClick={() => navigate("/admin")}
                     className="px-4 py-2 hover:bg-gray-50 cursor-pointer lg:hidden flex items-center gap-2"
                   >
-                    🏪 Seller Panel
+                    🏪 Admin Panel
                   </li>
                   <hr className="border-gray-100 my-1" />
                   <li 

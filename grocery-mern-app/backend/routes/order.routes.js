@@ -8,13 +8,13 @@ import {
   verifyPayPalPayment,
   updateOrderStatus,
 } from "../controller/order.controller.js";
-import { authSeller } from "../middlewares/authSeller.js";
+import { authAdmin } from "../middlewares/authAdmin.js";
 
 const router = express.Router();
 router.post("/cod", authUser, placeOrderCOD);
 router.get("/user", authUser, getUserOrders);
-router.get("/seller", authSeller, getAllOrders);
-router.post("/status", authSeller, updateOrderStatus);
+router.get("/admin", authAdmin, getAllOrders);
+router.post("/status", authAdmin, updateOrderStatus);
 router.post("/paypal/create", authUser, createPayPalOrder);
 router.post("/paypal/verify", authUser, verifyPayPalPayment);
 

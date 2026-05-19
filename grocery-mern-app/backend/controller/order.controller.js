@@ -297,12 +297,15 @@ export const verifyPayPalPayment = async (req, res) => {
   }
 };
 
-// Update Order Status (Seller): /api/order/status
+// Update Order Status and Assign Rider (Admin): /api/admin/order/status
 export const updateOrderStatus = async (req, res) => {
   try {
-    const { orderId, status } = req.body;
+    const { orderId, status, rider } = req.body;
     
-    const updateData = { status };
+    const updateData = {};
+    if (status) updateData.status = status;
+    if (rider !== undefined) updateData.rider = rider;
+
     if (status === "Delivered") {
       updateData.isPaid = true;
       updateData.paymentStatus = "completed";
@@ -320,7 +323,7 @@ export const updateOrderStatus = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Order status updated successfully",
+      message: "Order updated successfully",
       order,
     });
   } catch (error) {

@@ -11,22 +11,23 @@ import Auth from "./modals/Auth";
 import ProductCategory from "./pages/ProductCategory";
 import Address from "./pages/Address";
 import MyOrders from "./pages/MyOrders";
-import SellerLogin from "./components/seller/SellerLogin";
-import SellerLayout from "./pages/seller/SellerLayout";
-import AddProduct from "./pages/seller/AddProduct";
-import ProductList from "./pages/seller/ProductList";
-import Orders from "./pages/seller/Orders";
+import AdminLogin from "./components/admin/AdminLogin";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AddProduct from "./pages/admin/AddProduct";
+import ProductList from "./pages/admin/ProductList";
+import Orders from "./pages/admin/Orders";
 import VerifyPayment from "./pages/VerifyPayment";
+
 const App = () => {
-  const isSellerPath = useLocation().pathname.includes("seller");
-  const { showUserLogin, isSeller } = useAppContext();
+  const isAdminPath = useLocation().pathname.includes("admin");
+  const { showUserLogin, isAdmin } = useAppContext();
   return (
     <div className="text-default min-h-screen">
-      {isSellerPath ? null : <Navbar />}
+      {isAdminPath ? null : <Navbar />}
       {showUserLogin ? <Auth /> : null}
       <Toaster />
       <div
-        className={`${isSellerPath ? "" : "px-6 md:px-16 lg:px-24 xl:px-32"}`}
+        className={`${isAdminPath ? "" : "px-6 md:px-16 lg:px-24 xl:px-32"}`}
       >
         <Routes>
           <Route path="/" element={<Home />} />
@@ -38,19 +39,19 @@ const App = () => {
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/verify-payment" element={<VerifyPayment />} />
           <Route
-            path="/seller"
-            element={isSeller ? <SellerLayout /> : <SellerLogin />}
+            path="/admin"
+            element={isAdmin ? <AdminLayout /> : <AdminLogin />}
           >
-            <Route index element={isSeller ? <AddProduct /> : null} />
+            <Route index element={isAdmin ? <AddProduct /> : null} />
             <Route
               path="product-list"
-              element={isSeller ? <ProductList /> : null}
+              element={isAdmin ? <ProductList /> : null}
             />
-            <Route path="orders" element={isSeller ? <Orders /> : null} />
+            <Route path="orders" element={isAdmin ? <Orders /> : null} />
           </Route>
         </Routes>
       </div>
-      {isSellerPath ? null : <Footer />}
+      {isAdminPath ? null : <Footer />}
     </div>
   );
 };

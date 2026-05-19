@@ -92,6 +92,11 @@ const MyOrders = () => {
                   }`}>
                     {order.status}
                   </span>
+                  {order.rider && (
+                    <span className="text-[10px] text-gray-500 font-bold block mt-1">
+                      🛵 Rider: <span className="text-black">{order.rider}</span>
+                    </span>
+                  )}
                 </div>
               </div>
 

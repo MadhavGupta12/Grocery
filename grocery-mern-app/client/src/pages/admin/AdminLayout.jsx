@@ -2,25 +2,25 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import { assets } from "../../assets/assets";
 import { useAppContext } from "../../context/AppContext";
 import toast from "react-hot-toast";
-const SellerLayout = () => {
-   const { setIsSeller, axios, navigate } = useAppContext();
+const AdminLayout = () => {
+   const { setIsAdmin, axios, navigate } = useAppContext();
   const sidebarLinks = [
-    { name: "Add Product", path: "/seller", icon: assets.add_icon },
+    { name: "Add Product", path: "/admin", icon: assets.add_icon },
     {
       name: "Product List",
-      path: "/seller/product-list",
+      path: "/admin/product-list",
       icon: assets.product_list_icon,
     },
-    { name: "Orders", path: "/seller/orders", icon: assets.order_icon },
+    { name: "Orders", path: "/admin/orders", icon: assets.order_icon },
   ];
 
   const logout = async () => {
     try {
-      const { data } = await axios.get("/api/seller/logout");
+      const { data } = await axios.get("/api/admin/logout");
       if (data.success) {
-        localStorage.removeItem("mapta_seller_token");
+        localStorage.removeItem("mapta_admin_token");
         delete axios.defaults.headers.common["Authorization"];
-        setIsSeller(false);
+        setIsAdmin(false);
         toast.success("Logged out successfully");
         navigate("/");
       }
@@ -51,7 +51,7 @@ const SellerLayout = () => {
             <NavLink
               to={item.path}
               key={item.name}
-              end={item.path === "/seller"}
+              end={item.path === "/admin"}
               className={({ isActive }) => `flex items-center py-3 px-4 gap-3 
                             ${
                               isActive
@@ -69,4 +69,4 @@ const SellerLayout = () => {
     </>
   );
 };
-export default SellerLayout;
+export default AdminLayout;

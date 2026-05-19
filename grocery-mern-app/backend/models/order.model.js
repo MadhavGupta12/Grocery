@@ -17,6 +17,7 @@ const orderSchema = new mongoose.Schema(
     paypalOrderId: { type: String },
     couponCode: { type: String },
     discount: { type: Number, default: 0 },
+    rider: { type: String, default: "" },
   },
   { timestamps: true }
 );
