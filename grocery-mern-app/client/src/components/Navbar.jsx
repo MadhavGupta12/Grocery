@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { assets } from "../assets/assets";
 import toast from "react-hot-toast";
+
 const Navbar = () => {
-  const [open, setOpen] = useState(false);
   const {
     user,
     setUser,
@@ -14,8 +14,11 @@ const Navbar = () => {
     searchQuery,
     setSearchQuery,
     cartCount,
+    totalCartAmount,
     axios,
   } = useAppContext();
+
+  const [displayAddress, setDisplayAddress] = useState("Select Delivery Location");
 
   const logout = async () => {
     try {
@@ -31,201 +34,166 @@ const Navbar = () => {
       toast.error(error.message);
     }
   };
+
   useEffect(() => {
-    if (searchQuery.length > 0) {
+    if (user) {
+      axios.get("/api/address/get")
+        .then(({ data }) => {
+          if (data.success && data.addresses && data.addresses.length > 0) {
+            const addr = data.addresses[0];
+            setDisplayAddress(`${addr.street}, ${addr.city}`);
+          }
+        })
+        .catch(() => {});
+    } else {
+      setDisplayAddress("Select Delivery Location");
+    }
+  }, [user]);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    if (window.location.pathname !== "/products") {
       navigate("/products");
     }
-  }, []);
+  };
+
   return (
-    <nav className="flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 border-b border-gray-300 bg-white relative transition-all">
-      <Link to="/">
-        <h2 className="text-2xl font-bold text-primary">Grocery App</h2>
-      </Link>
+    <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+      {/* Top Banner: Promo or Speed info */}
+      <div className="bg-primary text-white text-center py-1 text-xs font-semibold tracking-wide">
+        ⚡ Superfast 10-Minute Delivery to your doorstep!
+      </div>
 
-      {/* Desktop Menu */}
-      <div className="hidden sm:flex items-center gap-8">
-        <Link to={"/"}>Home</Link>
-        <Link to={"/products"}>All Products</Link>
+      <div className="px-4 py-3 md:px-12 lg:px-24 flex flex-col gap-3">
+        {/* Main Row */}
+        <div className="flex items-center justify-between gap-4">
+          
+          {/* Logo & Delivery Info */}
+          <div className="flex items-center gap-6">
+            <Link to="/" className="flex items-center">
+              <span className="text-3xl font-black italic text-primary tracking-tighter">zepto</span>
+              <span className="text-accent text-3xl font-black font-sans">.</span>
+            </Link>
 
-        <div className="hidden lg:flex items-center text-sm gap-2 border border-gray-300 px-3 rounded-full">
+            {/* Delivery Time & Address Card */}
+            <div className="hidden md:flex flex-col pl-6 border-l border-gray-200">
+              <div className="flex items-center gap-1.5 text-black font-extrabold text-sm tracking-tight">
+                <span>⚡</span>
+                <span>Delivering in 10 Mins</span>
+              </div>
+              <div 
+                onClick={() => user ? navigate("/cart") : setShowUserLogin(true)}
+                className="text-xs text-gray-500 font-semibold cursor-pointer hover:text-primary flex items-center gap-1 mt-0.5"
+              >
+                <span className="truncate max-w-[200px]">{displayAddress}</span>
+                <span>▼</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Center Search Bar (Desktop) */}
+          <div className="flex-1 max-w-[600px] relative hidden sm:block">
+            <input
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="w-full bg-[#f3f4f6] text-gray-800 text-sm pl-11 pr-4 py-2.5 rounded-xl border border-transparent focus:border-primary/20 focus:bg-white focus:shadow-sm outline-none transition placeholder-gray-400 font-medium"
+              type="text"
+              placeholder="Search for 'milk', 'bread', 'banana' or 'veggies'..."
+            />
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2" />
+                <path d="M14 14L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </span>
+          </div>
+
+          {/* Right Controls */}
+          <div className="flex items-center gap-4">
+            {/* Seller Link */}
+            <Link 
+              to="/seller" 
+              className="text-sm font-semibold text-gray-600 hover:text-primary hidden lg:block"
+            >
+              Seller Panel
+            </Link>
+
+            {/* Auth Button */}
+            {user ? (
+              <div className="relative group py-2">
+                <div className="flex items-center gap-2 cursor-pointer">
+                  <img src={assets.profile_icon} alt="Profile" className="w-8 h-8 rounded-full border border-gray-200" />
+                  <span className="text-sm font-semibold text-gray-700 hidden md:inline">
+                    Hi, {user.name.split(" ")[0]}
+                  </span>
+                </div>
+                <ul className="hidden group-hover:block absolute right-0 top-full bg-white shadow-xl border border-gray-100 py-1.5 w-40 rounded-xl z-50 text-sm font-semibold text-gray-700">
+                  <li
+                    onClick={() => navigate("/my-orders")}
+                    className="px-4 py-2 hover:bg-gray-50 cursor-pointer flex items-center gap-2"
+                  >
+                    📦 My Orders
+                  </li>
+                  <li
+                    onClick={() => navigate("/seller")}
+                    className="px-4 py-2 hover:bg-gray-50 cursor-pointer lg:hidden flex items-center gap-2"
+                  >
+                    🏪 Seller Panel
+                  </li>
+                  <hr className="border-gray-100 my-1" />
+                  <li 
+                    className="px-4 py-2 hover:bg-red-50 text-red-500 cursor-pointer flex items-center gap-2" 
+                    onClick={logout}
+                  >
+                    🚪 Logout
+                  </li>
+                </ul>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowUserLogin(true)}
+                className="cursor-pointer px-5 py-2 text-sm text-primary font-bold hover:bg-primary/5 rounded-xl transition"
+              >
+                Login
+              </button>
+            )}
+
+            {/* Zepto-Style Cart Button */}
+            <button
+              onClick={() => navigate("/cart")}
+              className="bg-success text-white px-4 py-2.5 rounded-xl flex items-center gap-2.5 shadow-md hover:bg-success/95 transition font-semibold text-sm cursor-pointer"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 3H5L5.4 5M5.4 5H21L19 13H7M5.4 5L7 13M7 13L4.7 17.6C4.5 18 4.8 18.5 5.3 18.5H19M9 21.5C9.6 21.5 10 21.1 10 20.5C10 19.9 9.6 19.5 9 19.5C8.4 19.5 8 19.9 8 20.5C8 21.1 8.4 21.5 9 21.5ZM17 21.5C17.6 21.5 18 21.1 18 20.5C18 19.9 17.6 19.5 17 19.5C16.4 19.5 16 19.9 16 20.5C16 21.1 16.4 21.5 17 21.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>{cartCount() > 0 ? `${cartCount()} items` : "My Cart"}</span>
+              {cartCount() > 0 && (
+                <span className="border-l border-white/20 pl-2.5 font-bold">
+                  ${(totalCartAmount() + (totalCartAmount() * 2) / 100).toFixed(2)}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Search Bar Row (sm and under) */}
+        <div className="relative block sm:hidden pb-1">
           <input
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="py-1.5 w-full bg-transparent outline-none placeholder-gray-500"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="w-full bg-[#f3f4f6] text-gray-800 text-sm pl-11 pr-4 py-2 rounded-xl border border-transparent focus:border-primary/20 focus:bg-white focus:shadow-sm outline-none transition placeholder-gray-400 font-medium"
             type="text"
-            placeholder="Search products"
+            placeholder="Search for 'milk', 'chips', 'apple'..."
           />
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M10.836 10.615 15 14.695"
-              stroke="#7A7B7D"
-              stroke-width="1.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              clip-rule="evenodd"
-              d="M9.141 11.738c2.729-1.136 4.001-4.224 2.841-6.898S7.67.921 4.942 2.057C2.211 3.193.94 6.281 2.1 8.955s4.312 3.92 7.041 2.783"
-              stroke="#7A7B7D"
-              stroke-width="1.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2" />
+              <path d="M14 14L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </span>
         </div>
-
-        <div
-          onClick={() => navigate("/cart")}
-          className="relative cursor-pointer"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M.583.583h2.333l1.564 7.81a1.17 1.17 0 0 0 1.166.94h5.67a1.17 1.17 0 0 0 1.167-.94l.933-4.893H3.5m2.333 8.75a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0m6.417 0a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0"
-              stroke="#615fff"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-          <button className="absolute -top-2 -right-3 text-xs text-white bg-indigo-500 w-[18px] h-[18px] rounded-full">
-            {cartCount()}
-          </button>
-        </div>
-
-        {user ? (
-          <div className="relative group">
-            <img src={assets.profile_icon} alt="" className="w-10" />
-            <ul className="hidden group-hover:block absolute top-10 roght-0 bg-white shadow border border-gray-200 py-2 w-30 rounded-md z-40 text-sm">
-              <li
-                onClick={() => navigate("/my-orders")}
-                className="p-1.5 cursor-pointer"
-              >
-                My Orders
-              </li>
-              <li className="cursor-pointer p-1.5" onClick={logout}>
-                Logout
-              </li>
-            </ul>
-          </div>
-        ) : (
-          <button
-            onClick={() => {
-              setOpen(false);
-              setShowUserLogin(true);
-            }}
-            className="cursor-pointer px-8 py-2 bg-indigo-500 hover:bg-indigo-600 transition text-white rounded-full"
-          >
-            Login
-          </button>
-        )}
       </div>
-      <div className="flex items-center gap-6 md:hidden">
-        <div
-          className="relative cursor-pointer"
-          onClick={() => navigate("/cart")}
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M.583.583h2.333l1.564 7.81a1.17 1.17 0 0 0 1.166.94h5.67a1.17 1.17 0 0 0 1.167-.94l.933-4.893H3.5m2.333 8.75a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0m6.417 0a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0"
-              stroke="#615fff"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-          <button className="absolute -top-2 -right-3 text-xs text-white bg-indigo-500 w-[18px] h-[18px] rounded-full">
-            {cartCount()}
-          </button>
-        </div>
-        <button
-          onClick={() => (open ? setOpen(false) : setOpen(true))}
-          aria-label="Menu"
-          className="sm:hidden"
-        >
-          {/* Menu Icon SVG */}
-          <svg
-            width="21"
-            height="15"
-            viewBox="0 0 21 15"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect width="21" height="1.5" rx=".75" fill="#426287" />
-            <rect x="8" y="6" width="13" height="1.5" rx=".75" fill="#426287" />
-            <rect
-              x="6"
-              y="13"
-              width="15"
-              height="1.5"
-              rx=".75"
-              fill="#426287"
-            />
-          </svg>
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      <div
-        className={`${
-          open ? "flex" : "hidden"
-        } absolute top-[60px] left-0 w-full bg-white shadow-md py-4 flex-col items-start gap-2 px-5 text-sm md:hidden`}
-      >
-        <Link onClick={() => setOpen(false)} to={"/"}>
-          Home
-        </Link>
-        <Link onClick={() => setOpen(false)} to={"/products"}>
-          Products
-        </Link>
-
-        {user ? (
-          <div className="relative group">
-            <img src={assets.profile_icon} alt="" className="w-10" />
-            <ul className="hidden group-hover:block absolute top-10 roght-0 bg-white shadow border border-gray-200 py-2 w-30 rounded-md z-40 text-sm">
-              <li
-                onClick={() => navigate("/my-orders")}
-                className="p-1.5 cursor-pointer"
-              >
-                My Orders
-              </li>
-              <li
-                className="cursor-pointer p-1.5"
-                onClick={() => {
-                  setUser(null);
-                  navigate("/");
-                }}
-              >
-                Logout
-              </li>
-            </ul>
-          </div>
-        ) : (
-          <button
-            onClick={() => {
-              setOpen(false);
-              setShowUserLogin(true);
-            }}
-            className="cursor-pointer px-8 py-2 bg-indigo-500 hover:bg-indigo-600 transition text-white rounded-full"
-          >
-            Login
-          </button>
-        )}
-      </div>
-    </nav>
+    </header>
   );
 };
 
