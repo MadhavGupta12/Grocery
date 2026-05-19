@@ -8,10 +8,10 @@ dotenv.config();
 const baseProducts = [
   // Vegetables (17 items)
   { name: "Organic Potato 1kg", category: "Vegetables", price: 30, image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400" },
-  { name: "Fresh Tomato 1kg", category: "Vegetables", price: 45, image: "https://images.unsplash.com/photo-1595855759920-86582396756a?w=400" },
-  { name: "Sweet Carrot 500g", category: "Vegetables", price: 35, image: "https://images.unsplash.com/photo-1598170845058-32b996a67f2c?w=400" },
+  { name: "Fresh Tomato 1kg", category: "Vegetables", price: 45, image: "https://images.unsplash.com/photo-1546470427083-8dd2ad83d97e?w=400" },
+  { name: "Sweet Carrot 500g", category: "Vegetables", price: 35, image: "https://images.unsplash.com/photo-1447175008436-054170c2e979?w=400" },
   { name: "Green Spinach Bunch", category: "Vegetables", price: 20, image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400" },
-  { name: "Red Onion 1kg", category: "Vegetables", price: 25, image: "https://images.unsplash.com/photo-1508747702841-10ef9c87b4d5?w=400" },
+  { name: "Red Onion 1kg", category: "Vegetables", price: 25, image: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=400" },
   { name: "Green Broccoli 1pc", category: "Vegetables", price: 65, image: "https://images.unsplash.com/photo-1584270354949-c26b0d5b4a0c?w=400" },
   { name: "Cauliflower 1pc", category: "Vegetables", price: 55, image: "https://images.unsplash.com/photo-1568584711271-6c929fb49b60?w=400" },
   { name: "Bell Peppers Mix 3pc", category: "Vegetables", price: 50, image: "https://images.unsplash.com/photo-1563565087-925b487a35c2?w=400" },

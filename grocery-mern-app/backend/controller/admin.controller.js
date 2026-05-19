@@ -196,3 +196,57 @@ export const getAnalytics = async (req, res) => {
     res.status(500).json({ message: "Failed to load analytics data", success: false });
   }
 };
+export const getRecentEvents = async (req, res) => {
+  try {
+    const recentOrders = await Order.find()
+      .sort({ updatedAt: -1 })
+      .limit(10)
+      .populate({ path: "items.product", model: "Product", select: "name" });
+
+    const events = recentOrders.map((order) => {
+      const productName = order.items?.[0]?.product?.name || "a product";
+      const status = order.status || "Order Placed";
+      const timeDiff = Date.now() - new Date(order.updatedAt).getTime();
+      const minutesAgo = Math.floor(timeDiff / 60000);
+      const timeLabel =
+        minutesAgo < 1
+          ? "Just now"
+          : minutesAgo < 60
+          ? `${minutesAgo} min ago`
+          : `${Math.floor(minutesAgo / 60)}h ago`;
+
+      let badge = "INFO";
+      let message = "";
+
+      if (status === "Order Placed") {
+        badge = "SUCCESS";
+        message = `New order placed — ${productName} ($${order.amount.toFixed(2)})`;
+      } else if (status === "Order Packed") {
+        badge = "INFO";
+        message = `Order packed and ready for dispatch — $${order.amount.toFixed(2)}`;
+      } else if (status === "Order Shipped") {
+        badge = "INFO";
+        message = `Shipment dispatched — ${productName}`;
+      } else if (status === "Out for Delivery") {
+        badge = "WARNING";
+        message = `Out for delivery${order.rider ? ` via ${order.rider}` : ""} — $${order.amount.toFixed(2)}`;
+      } else if (status === "Delivered") {
+        badge = "SUCCESS";
+        message = `Order delivered successfully — ${productName}`;
+      }
+
+      const payType = (order.paymentType || "").toLowerCase();
+      if (payType.includes("paypal") && order.isPaid) {
+        badge = "PAYMENT";
+        message = `PayPal payment confirmed — $${order.amount.toFixed(2)}`;
+      }
+
+      return { id: order._id, time: timeLabel, message, badge, status };
+    });
+
+    res.status(200).json({ success: true, events });
+  } catch (error) {
+    console.error("Error in getRecentEvents:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch events" });
+  }
+};

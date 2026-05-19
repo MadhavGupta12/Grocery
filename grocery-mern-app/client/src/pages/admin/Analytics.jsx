@@ -6,12 +6,8 @@ const Analytics = () => {
   const { axios } = useContext(AppContext);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
-  const [theme, setTheme] = useState("cyberpunk"); // 'light' or 'cyberpunk'
-  const [realtimeTicks, setRealtimeTicks] = useState([
-    { id: 1, time: "Just now", type: "order", message: "New order placed by Madhav ($142.50)", badge: "SUCCESS" },
-    { id: 2, time: "3 mins ago", type: "payment", message: "PayPal transaction confirmed ($28.00)", badge: "PAYMENT" },
-    { id: 3, time: "12 mins ago", type: "stock", message: "Fresh Tomato 1kg stock low (5 left)", badge: "WARNING" }
-  ]);
+  const [theme, setTheme] = useState("cyberpunk");
+  const [realtimeTicks, setRealtimeTicks] = useState([]);
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalSales: 0,
@@ -45,31 +41,23 @@ const Analytics = () => {
     fetchAnalytics();
   }, [fetchAnalytics]);
 
-  // Simulate real-time active system logs for visual excellence
+  // Fetch REAL order events from backend, refresh every 30s
+  const fetchEvents = useCallback(async () => {
+    try {
+      const { data } = await axios.get("/api/admin/events");
+      if (data.success && data.events.length > 0) {
+        setRealtimeTicks(data.events);
+      }
+    } catch (err) {
+      console.warn("Events fetch failed:", err.message);
+    }
+  }, [axios]);
+
   useEffect(() => {
-    if (loading) return;
-    const interval = setInterval(() => {
-      const names = ["Aisha", "Amit", "Sara", "Rahul", "Kunal", "Divya", "Shreya"];
-      const products = ["Organic Oats 1kg", "Whole Wheat Bread", "Basmati Rice 5kg", "Cheddar Cheese", "Almond Milk 1L"];
-      const price = (15 + Math.random() * 150).toFixed(2);
-      const randomName = names[Math.floor(Math.random() * names.length)];
-      const randomProduct = products[Math.floor(Math.random() * products.length)];
-      
-      const newTick = {
-        id: Date.now(),
-        time: "Just now",
-        type: Math.random() > 0.4 ? "order" : "stock",
-        message: Math.random() > 0.4 
-          ? `Order placed by ${randomName} for ${randomProduct} ($${price})`
-          : `Inventory check: ${randomProduct} is healthy in stock.`,
-        badge: Math.random() > 0.4 ? "SUCCESS" : "INFO"
-      };
-
-      setRealtimeTicks(prev => [newTick, ...prev.slice(0, 4)]);
-    }, 15000); // add new tick every 15 seconds
-
+    fetchEvents();
+    const interval = setInterval(fetchEvents, 30000);
     return () => clearInterval(interval);
-  }, [loading]);
+  }, [fetchEvents]);
 
   if (loading) {
     return (
