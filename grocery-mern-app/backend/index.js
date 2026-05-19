@@ -30,15 +30,7 @@ const allowedOrigins = [
 
 // CORS configuration for production
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.some(allowed => 
-      typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
-    )) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: "*", // Allow all origins to prevent Network Errors
   credentials: true,
 };
 
