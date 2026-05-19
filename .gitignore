@@ -30,7 +30,12 @@ npm-debug.log*
 Thumbs.db
 
 # Uploads
-uploads/
+grocery-mern-app/backend/uploads/*
+!grocery-mern-app/backend/uploads/*.png
+!grocery-mern-app/backend/uploads/*.jpg
+!grocery-mern-app/backend/uploads/*.jpeg
+!grocery-mern-app/backend/uploads/*.svg
+grocery-mern-app/backend/uploads/[0-9]*
 
 # Package locks
 # package-lock.json
