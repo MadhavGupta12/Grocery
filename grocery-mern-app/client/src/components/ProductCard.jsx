@@ -1,4 +1,5 @@
 import { useAppContext } from "../context/AppContext";
+import { getImageUrl } from "../utils/getImageUrl";
 
 const ProductCard = ({ product }) => {
   const { addToCart, removeFromCart, cartItems, navigate } = useAppContext();
@@ -23,7 +24,7 @@ const ProductCard = ({ product }) => {
         <div className="w-full h-32 flex items-center justify-center p-2 rounded-xl bg-gray-50/50 mb-3 relative overflow-hidden">
           <img
             className="hover:scale-105 transition-transform duration-300 max-h-full object-contain"
-            src={product.image[0] && (product.image[0].startsWith('http') ? product.image[0] : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/images/${product.image[0]}`)}
+            src={getImageUrl(product.image?.[0])}
             alt={product.name}
           />
         </div>

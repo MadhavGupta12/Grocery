@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { dummyProducts } from "../assets/assets";
 import toast from "react-hot-toast";
 import axios from "axios";
 axios.defaults.withCredentials = true;
@@ -23,6 +22,7 @@ axios.interceptors.request.use(
   }
 );
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AppContext = createContext(null);
 
 export const AppContextProvider = ({ children }) => {
@@ -43,9 +43,9 @@ export const AppContextProvider = ({ children }) => {
       } else {
         setIsSeller(false);
       }
-    } catch (error) {
-      setIsSeller(false);
-    }
+} catch {
+       setIsSeller(false);
+     }
   };
 
   // fetch user auth status ,user Data and cart items
@@ -156,7 +156,7 @@ export const AppContextProvider = ({ children }) => {
     if (user) {
       updateCart();
     }
-  }, [cartItems]);
+  }, [cartItems, user]);
   const value = {
     navigate,
     user,
@@ -181,6 +181,7 @@ export const AppContextProvider = ({ children }) => {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppContext = () => {
   return useContext(AppContext);
 };

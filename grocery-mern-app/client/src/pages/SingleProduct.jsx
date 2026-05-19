@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
+import { getImageUrl } from "../utils/getImageUrl";
 import { Link, useParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 
@@ -48,7 +49,7 @@ const SingleProduct = () => {
             {/* Thumbnails */}
             <div className="flex md:flex-col gap-3 justify-center md:justify-start">
               {product.image.map((image, index) => {
-                const imgUrl = image.startsWith('http') ? image : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/images/${image}`;
+                const imgUrl = getImageUrl(image);
                 return (
                   <div
                     key={index}
@@ -70,7 +71,7 @@ const SingleProduct = () => {
             {/* Main Image View */}
             <div className="flex-1 border border-gray-100 rounded-2xl bg-gray-50/30 flex items-center justify-center p-6 min-h-[300px] md:min-h-[400px]">
               <img
-                src={thumbnail && (thumbnail.startsWith('http') ? thumbnail : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/images/${thumbnail}`)}
+                src={getImageUrl(thumbnail)}
                 alt="Selected product"
                 className="max-h-[350px] object-contain hover:scale-105 transition-transform duration-300"
               />

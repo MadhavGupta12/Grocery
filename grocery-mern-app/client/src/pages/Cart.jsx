@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAppContext } from "../context/AppContext";
-import { dummyAddress } from "../assets/assets";
-import axios from "axios";
+import { getImageUrl } from "../utils/getImageUrl";
 import toast from "react-hot-toast";
 const Cart = () => {
   const {
@@ -31,58 +30,58 @@ const Cart = () => {
   const [coupons, setCoupons] = useState([]);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
 
-  const getCart = () => {
-    let tempArray = [];
-    for (const key in cartItems) {
-      const product = products.find((product) => product._id === key);
-      if (product) {
-        product.quantity = cartItems[key];
-        tempArray.push(product);
-      }
-    }
-    setCartArray(tempArray);
-  };
+const getCart = useCallback(() => {
+     let tempArray = [];
+     for (const key in cartItems) {
+       const product = products.find((product) => product._id === key);
+       if (product) {
+         product.quantity = cartItems[key];
+         tempArray.push(product);
+       }
+     }
+     setCartArray(tempArray);
+   }, [cartItems, products]);
 
-  const getAddress = async () => {
-    try {
-      const { data } = await axios.get("/api/address/get");
-      if (data.success) {
-        setAddress(data.addresses);
-        if (data.addresses.length > 0) {
-          setSelectedAddress(data.addresses[0]);
-        }
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
+   const getAddress = useCallback(async () => {
+     try {
+       const { data } = await axios.get("/api/address/get");
+       if (data.success) {
+         setAddress(data.addresses);
+         if (data.addresses.length > 0) {
+           setSelectedAddress(data.addresses[0]);
+         }
+       } else {
+         toast.error(data.message);
+       }
+     } catch (error) {
+       toast.error(error.message);
+     }
+   }, [axios]);
 
-  const fetchCoupons = async () => {
-    try {
-      const { data } = await axios.get("/api/user/coupons");
-      if (data.success) {
-        setTotalSpending(data.totalSpending);
-        setCoupons(data.coupons);
-      }
-    } catch (error) {
-      console.error("Error fetching coupons:", error);
-    }
-  };
+   const fetchCoupons = useCallback(async () => {
+     try {
+       const { data } = await axios.get("/api/user/coupons");
+       if (data.success) {
+         setTotalSpending(data.totalSpending);
+         setCoupons(data.coupons);
+       }
+     } catch (error) {
+       console.error("Error fetching coupons:", error);
+     }
+   }, [axios]);
 
-  useEffect(() => {
-    if (user) {
-      getAddress();
-      fetchCoupons();
-    }
-  }, [user]);
+   useEffect(() => {
+     if (user) {
+       getAddress();
+       fetchCoupons();
+     }
+   }, [user, getAddress, fetchCoupons]);
 
-  useEffect(() => {
-    if (products.length > 0 && cartItems) {
-      getCart();
-    }
-  }, [products, cartItems]);
+   useEffect(() => {
+     if (products.length > 0 && cartItems) {
+       getCart();
+     }
+   }, [products, cartItems, getCart]);
 
   const applyCoupon = (coupon) => {
     if (selectedCoupon?.code === coupon.code) {
@@ -235,7 +234,7 @@ const Cart = () => {
                 >
                   <img
                     className="max-h-full object-contain"
-                    src={product.image[0] && (product.image[0].startsWith('http') ? product.image[0] : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/images/${product.image[0]}`)}
+                    src={getImageUrl(product.image?.[0])}
                     alt={product.name}
                   />
                 </div>

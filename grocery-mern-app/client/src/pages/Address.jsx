@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
@@ -15,7 +15,7 @@ const Address = () => {
     country: "",
     phone: "",
   });
-  const { axios, user, navigate } = useContext(AppContext);
+  const { axios, navigate } = useContext(AppContext);
   const handleChange = (e) => {
     setAddress({ ...address, [e.target.name]: e.target.value });
   };

@@ -13,7 +13,7 @@ const VerifyPayment = () => {
   useEffect(() => {
     const verifyPayment = async () => {
       try {
-        const token = searchParams.get("token");
+        searchParams.get("token");
 
         // Get pending order from localStorage
         const pendingOrder = localStorage.getItem("pendingOrder");

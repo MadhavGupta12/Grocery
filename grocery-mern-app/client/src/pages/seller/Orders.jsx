@@ -1,6 +1,6 @@
-import { useContext, useEffect, useState } from "react";
-import { AppContext, useAppContext } from "../../context/AppContext";
-import { assets, dummyOrders } from "../../assets/assets";
+import { useContext, useEffect, useState, useCallback } from "react";
+import { AppContext } from "../../context/AppContext";
+import { getImageUrl } from "../../utils/getImageUrl";
 import toast from "react-hot-toast";
 
 const Orders = () => {
@@ -9,7 +9,7 @@ const Orders = () => {
 
   const [orders, setOrders] = useState([]);
   const { axios } = useContext(AppContext);
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/order/seller");
       if (data.success) {
@@ -20,8 +20,13 @@ const Orders = () => {
     } catch (error) {
       toast.error(error.message);
     }
-  };
-  const handleStatusChange = async (orderId, newStatus) => {
+}, [axios]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const handleStatusChange = useCallback(async (orderId, newStatus) => {
     try {
       const { data } = await axios.post("/api/order/status", {
         orderId,
@@ -46,11 +51,7 @@ const Orders = () => {
     } catch (error) {
       toast.error(error.message || "Failed to update order status");
     }
-  };
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  }, [axios]);
 
   return (
     <div className="md:p-10 p-4 space-y-4">
@@ -63,7 +64,7 @@ const Orders = () => {
           <div className="flex gap-5">
             <img
               className="w-12 h-12 object-cover opacity-60"
-              src={order.items[0]?.product?.image?.[0] ? (order.items[0].product.image[0].startsWith('http') ? order.items[0].product.image[0] : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/images/${order.items[0].product.image[0]}`) : boxIcon}
+              src={getImageUrl(order.items[0]?.product?.image?.[0]) || boxIcon}
               alt="boxIcon"
             />
             <>

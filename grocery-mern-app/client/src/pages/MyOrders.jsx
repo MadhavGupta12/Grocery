@@ -1,12 +1,13 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { AppContext } from "../context/AppContext";
+import { getImageUrl } from "../utils/getImageUrl";
 import toast from "react-hot-toast";
 
 const MyOrders = () => {
   const [myOrders, setMyOrders] = useState([]);
   const { axios, user } = useContext(AppContext);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/order/user");
       if (data.success) {
@@ -17,13 +18,13 @@ const MyOrders = () => {
     } catch (error) {
       toast.error(error.message);
     }
-  };
+  }, [axios]);
 
   useEffect(() => {
     if (user) {
       fetchOrders();
     }
-  }, [user]);
+  }, [user, fetchOrders]);
 
   const getTimelineSteps = (status) => {
     const steps = ["Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
@@ -104,7 +105,7 @@ const MyOrders = () => {
                     <div className="flex items-center gap-3.5">
                       <div className="w-14 h-14 bg-gray-50 border border-gray-100 rounded-xl p-1 flex items-center justify-center">
                         <img
-                          src={item.product?.image?.[0] && (item.product.image[0].startsWith('http') ? item.product.image[0] : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/images/${item.product.image[0]}`)}
+                          src={getImageUrl(item.product?.image?.[0])}
                           alt={item.product?.name || "Product"}
                           className="max-h-full object-contain"
                         />

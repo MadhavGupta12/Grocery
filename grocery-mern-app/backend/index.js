@@ -3,12 +3,18 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 dotenv.config();
 import { connectDB } from "./config/connectDB.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsDir = path.join(__dirname, "uploads");
+
 // Create uploads directory if it doesn't exist (needed for Render)
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads", { recursive: true });
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 import userRoutes from "./routes/user.routes.js";
 import sellerRoutes from "./routes/seller.routes.js";
@@ -45,7 +51,7 @@ app.get("/", (req, res) => {
 });
 
 // Api endpoints
-app.use("/images", express.static("uploads"));
+app.use("/images", express.static(uploadsDir));
 app.use("/api/user", userRoutes);
 app.use("/api/seller", sellerRoutes);
 app.use("/api/product", productRoutes);

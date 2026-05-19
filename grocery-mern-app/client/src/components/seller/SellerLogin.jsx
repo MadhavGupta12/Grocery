@@ -5,11 +5,11 @@ const SellerLogin = () => {
   const { isSeller, setIsSeller, navigate, axios } = useAppContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  useEffect(() => {
-    if (isSeller) {
-      navigate("/seller");
-    }
-  }, [isSeller]);
+useEffect(() => {
+     if (isSeller) {
+       navigate("/seller");
+     }
+   }, [isSeller, navigate]);
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();

@@ -8,7 +8,6 @@ const Navbar = () => {
   const {
     user,
     setUser,
-    showUserLogin,
     setShowUserLogin,
     navigate,
     searchQuery,
@@ -37,20 +36,20 @@ const Navbar = () => {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      axios.get("/api/address/get")
-        .then(({ data }) => {
-          if (data.success && data.addresses && data.addresses.length > 0) {
-            const addr = data.addresses[0];
-            setDisplayAddress(`${addr.street}, ${addr.city}`);
-          }
-        })
-        .catch(() => {});
-    } else {
-      setDisplayAddress("Select Delivery Location");
-    }
-  }, [user]);
+useEffect(() => {
+     if (user) {
+       axios.get("/api/address/get")
+         .then(({ data }) => {
+           if (data.success && data.addresses && data.addresses.length > 0) {
+             const addr = data.addresses[0];
+             setDisplayAddress(`${addr.street}, ${addr.city}`);
+           }
+         })
+         .catch(() => {});
+     } else {
+       setDisplayAddress("Select Delivery Location");
+     }
+   }, [user, axios]);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
