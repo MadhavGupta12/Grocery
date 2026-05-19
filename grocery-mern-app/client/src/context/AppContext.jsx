@@ -38,10 +38,14 @@ export const AppContextProvider = ({ children }) => {
         setUser(data.user);
         setCartItems(data.user.cart);
       } else {
-        toast.error(data.message);
+        // Silently ignore if not authenticated
       }
     } catch (error) {
-      toast.error(error.message);
+      if (error.response && error.response.status === 401) {
+        // User is not logged in, ignore
+      } else {
+        toast.error(error.message);
+      }
     }
   };
 

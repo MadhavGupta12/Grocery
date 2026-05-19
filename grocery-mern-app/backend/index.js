@@ -28,9 +28,10 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
-// CORS configuration for production
 const corsOptions = {
-  origin: "*", // Allow all origins to prevent Network Errors
+  origin: function (origin, callback) {
+    callback(null, true); // Allow any origin dynamically
+  },
   credentials: true,
 };
 
