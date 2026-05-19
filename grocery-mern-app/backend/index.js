@@ -24,6 +24,7 @@ import addressRoutes from "./routes/address.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 
 import { connectCloudinary } from "./config/cloudinary.js";
+import { autoProgressOrders } from "./services/orderAutomation.js";
 
 const app = express();
 
@@ -59,8 +60,18 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/order", orderRoutes);
 
+// Manual admin trigger for auto-progression
+app.post("/api/admin/auto-progress-orders", async (req, res) => {
+  await autoProgressOrders();
+  res.json({ success: true, message: "Orders auto-progressed" });
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   connectDB();
   console.log(`Server is running on port ${PORT}`);
+
+  // Auto-progress orders every 2 minutes
+  setInterval(autoProgressOrders, 2 * 60 * 1000);
+  console.log("[AutoOrder] Order automation started — runs every 2 minutes");
 });

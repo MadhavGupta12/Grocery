@@ -654,19 +654,8 @@ const Analytics = () => {
             </div>
           </div>
 
-          {/* Quick HUD command instructions for Recruiter impression */}
-          <div className={`rounded-2xl p-5 border relative overflow-hidden ${
-            isDark ? "bg-gradient-to-br from-[#0c142c] to-[#070b1a] border-slate-800/80" : "bg-indigo-50 border-indigo-100"
-          }`}>
-            <div className="absolute top-0 right-0 p-3 opacity-10">
-              <span className="text-5xl">⚡</span>
-            </div>
-            <h4 className={`text-xs font-black tracking-wider uppercase ${isDark ? "text-indigo-400" : "text-indigo-700"}`}>HUD System Specs</h4>
-            <p className="text-[10px] text-slate-400 mt-2 leading-relaxed font-semibold">
-              This executive platform features reactive SVGs, asynchronous Mongoose aggregates, dynamic light-dark states, and simulated pipeline event streams to demonstrate end-to-end fullstack execution.
-            </p>
-          </div>
         </div>
+
 
       </div>
     </div>
