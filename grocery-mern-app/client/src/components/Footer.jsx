@@ -3,10 +3,9 @@ const Footer = () => {
     <div className="text-gray-500/80 pt-8 px-6 md:px-16 lg:px-24 xl:px-32">
       <div className="flex flex-wrap justify-between gap-12 md:gap-6">
         <div className="max-w-80">
-          <h1 className="text-3xl font-semibold text-[#212121]">Grocery App</h1>
+          <h1 className="text-3xl font-semibold text-[#212121]">Mapta</h1>
           <p className="text-sm">
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
+            Mapta is your premium quick-commerce companion, bringing farm-fresh groceries, vegetables, fruits, bakery, and dairy items to your doorstep in 10 minutes.
           </p>
           <div className="flex items-center gap-3 mt-4">
             {/* Instagram */}
@@ -106,7 +105,7 @@ const Footer = () => {
       </div>
       <hr className="border-gray-300 mt-8" />
       <div className="flex flex-col md:flex-row gap-2 items-center justify-between py-5">
-        <p>© {new Date().getFullYear()} Brand. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Mapta. All rights reserved.</p>
         <ul className="flex items-center gap-4">
           <li>
             <a href="#">Privacy</a>

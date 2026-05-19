@@ -11,7 +11,7 @@ const Banner = () => {
       {/* Left text column */}
       <div className="flex-1 z-10 flex flex-col items-center md:items-start text-center md:text-left">
         <span className="bg-yellow-400 text-black text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-wider mb-4 animate-pulse">
-          ⚡ ZEPTO SAVINGS PASS
+          ⚡ MAPTA SAVINGS PASS
         </span>
         
         <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-none mb-4 max-w-lg">

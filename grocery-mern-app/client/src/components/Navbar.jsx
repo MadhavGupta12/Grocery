@@ -71,7 +71,7 @@ const Navbar = () => {
           {/* Logo & Delivery Info */}
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center">
-              <span className="text-3xl font-black italic text-primary tracking-tighter">zepto</span>
+              <span className="text-3xl font-black italic text-primary tracking-tighter">Mapta</span>
               <span className="text-accent text-3xl font-black font-sans">.</span>
             </Link>
 
