@@ -3,9 +3,12 @@ import Product from "../models/product.model.js";
 import axios from "axios";
 
 // PayPal Configuration
-const PAYPAL_API = "https://api.sandbox.paypal.com";
+const PAYPAL_API = process.env.PAYPAL_MODE === "live"
+  ? "https://api.paypal.com"
+  : "https://api.sandbox.paypal.com";
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 // Get PayPal Access Token
 const getPayPalAccessToken = async () => {
@@ -148,8 +151,8 @@ export const createPayPalOrder = async (req, res) => {
         },
       ],
       application_context: {
-        return_url: "http://localhost:5173/verify-payment",
-        cancel_url: "http://localhost:5173/cart",
+        return_url: `${CLIENT_URL}/verify-payment`,
+        cancel_url: `${CLIENT_URL}/cart`,
       },
     };
 

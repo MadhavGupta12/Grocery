@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: grocery-backend
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    rootDir: grocery-mern-app/backend
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        fromDatabase:
+          name: grocery-mongodb
+          property: connectionString
+      - key: CLIENT_URL
+        value: https://grocery-frontend.onrender.com
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_MODE
+        value: live
+      - key: SELLER_EMAIL
+        sync: false
+      - key: SELLER_PASSWORD
+        sync: false
+
+  - type: web
+    name: grocery-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    publishPath: grocery-mern-app/client/dist
+    staticPublishPath: grocery-mern-app/client/dist
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: VITE_BACKEND_URL
+        value: https://grocery-backend.onrender.com
+
+databases:
+  - name: grocery-mongodb
+    region: oregon
+    plan: free
