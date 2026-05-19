@@ -201,9 +201,7 @@ const Analytics = () => {
                 ? "bg-gradient-to-br from-indigo-950/80 to-[#121829] border-indigo-500/20 shadow-lg shadow-indigo-950/20 hover:border-indigo-500/40" 
                 : "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white border-transparent shadow-md"
             }`}>
-              <div className="absolute right-0 bottom-0 opacity-10 translate-y-4 translate-x-2 group-hover:scale-110 transition duration-300">
-                <span className="text-8xl font-black tracking-tighter">REV</span>
-              </div>
+
               <p className={`text-[10px] font-black uppercase tracking-wider ${isDark ? "text-indigo-400" : "text-indigo-100"}`}>Gross Net Revenue</p>
               <h2 className="text-4xl font-black tracking-tight mt-3">${stats.totalSales.toFixed(2)}</h2>
               <div className="flex items-center gap-1.5 mt-4">
@@ -218,9 +216,7 @@ const Analytics = () => {
                 ? "bg-[#101626] border-slate-800/80 shadow-md hover:border-slate-700" 
                 : "bg-white border-slate-200 shadow-sm hover:shadow-md"
             }`}>
-              <div className="absolute right-0 bottom-0 opacity-5 translate-y-4 translate-x-2 group-hover:scale-110 transition duration-300">
-                <span className="text-8xl font-black tracking-tighter">ORD</span>
-              </div>
+
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Total Sales Volume</p>
               <h2 className={`text-4xl font-black tracking-tight mt-3 ${isDark ? "text-white" : "text-slate-900"}`}>{stats.totalOrders}</h2>
               <div className="flex items-center gap-1.5 mt-4">
@@ -235,9 +231,7 @@ const Analytics = () => {
                 ? "bg-[#101626] border-slate-800/80 shadow-md hover:border-slate-700" 
                 : "bg-white border-slate-200 shadow-sm hover:shadow-md"
             }`}>
-              <div className="absolute right-0 bottom-0 opacity-5 translate-y-4 translate-x-2 group-hover:scale-110 transition duration-300">
-                <span className="text-8xl font-black tracking-tighter">AOV</span>
-              </div>
+
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Average Basket Size</p>
               <h2 className={`text-4xl font-black tracking-tight mt-3 ${isDark ? "text-white" : "text-slate-900"}`}>${averageOrderValue}</h2>
               <div className="flex items-center gap-1.5 mt-4">
