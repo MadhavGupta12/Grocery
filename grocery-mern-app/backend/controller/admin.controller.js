@@ -87,6 +87,20 @@ export const getAnalytics = async (req, res) => {
     const categorySales = {};
     const dailySalesMap = {};
 
+    // Advanced Order Analysis Metrics
+    const paymentMethods = { cod: 0, paypal: 0 };
+    const couponStats = {
+      usageCount: 0,
+      totalDiscount: 0,
+      codes: {}
+    };
+    const orderValueDistribution = {
+      under50: 0,
+      fiftyTo100: 0,
+      hundredTo200: 0,
+      over200: 0
+    };
+
     // Initialize last 7 days of daily sales
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -97,6 +111,28 @@ export const getAnalytics = async (req, res) => {
 
     orders.forEach((order) => {
       totalSales += order.amount;
+
+      // Payment Type aggregation
+      const pType = (order.paymentType || "").toLowerCase();
+      if (pType.includes("paypal")) {
+        paymentMethods.paypal++;
+      } else {
+        paymentMethods.cod++;
+      }
+
+      // Order value distribution
+      const amt = order.amount;
+      if (amt < 50) orderValueDistribution.under50++;
+      else if (amt >= 50 && amt < 100) orderValueDistribution.fiftyTo100++;
+      else if (amt >= 100 && amt < 200) orderValueDistribution.hundredTo200++;
+      else orderValueDistribution.over200++;
+
+      // Coupon details
+      if (order.couponCode) {
+        couponStats.usageCount++;
+        couponStats.totalDiscount += (order.discount || 0);
+        couponStats.codes[order.couponCode] = (couponStats.codes[order.couponCode] || 0) + 1;
+      }
 
       // Status aggregation
       const status = (order.status || "").toLowerCase();
@@ -143,6 +179,16 @@ export const getAnalytics = async (req, res) => {
         dailySalesTrend,
         categoryBreakdown,
         outOfStockProducts,
+        paymentMethods,
+        couponStats: {
+          usageCount: couponStats.usageCount,
+          totalDiscount: parseFloat(couponStats.totalDiscount.toFixed(2)),
+          codes: Object.keys(couponStats.codes).map((code) => ({
+            code,
+            count: couponStats.codes[code]
+          }))
+        },
+        orderValueDistribution
       },
     });
   } catch (error) {
