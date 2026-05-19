@@ -1,11 +1,11 @@
 import { useContext, useEffect, useState } from "react";
-import { dummyOrders } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
 
 const MyOrders = () => {
   const [myOrders, setMyOrders] = useState([]);
   const { axios, user } = useContext(AppContext);
+
   const fetchOrders = async () => {
     try {
       const { data } = await axios.get("/api/order/user");
@@ -24,57 +24,136 @@ const MyOrders = () => {
       fetchOrders();
     }
   }, [user]);
+
+  const getTimelineSteps = (status) => {
+    const steps = ["Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
+    
+    // Default to "Placed" if status is not standard
+    let currentIdx = steps.findIndex(step => step.toLowerCase() === status.toLowerCase());
+    if (currentIdx === -1) {
+      currentIdx = 0; // default to stage 1
+    }
+
+    return steps.map((step, idx) => ({
+      name: step,
+      completed: idx <= currentIdx,
+      active: idx === currentIdx
+    }));
+  };
+
   return (
-    <div className="mt-12 pb-16">
-      <div>
-        <p className="text-2xl md:text-3xl font-medium">My Orders</p>
+    <div className="mt-8 pb-16 max-w-4xl mx-auto w-full">
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-gray-900">Your Orders</h1>
+        <p className="text-gray-500 font-semibold text-xs mt-1">Track and manage your instant grocery orders</p>
       </div>
 
-      {myOrders.map((order, index) => (
-        <div
-          key={index}
-          className="my-8 border border-gray-300 rounded-lg mb-10 p-4 py-5 max-w-4xl"
-        >
-          <p className="flex justify-between items-center gap-6 ">
-            <span>orderId :{order._id} </span>
-            <span>payment :{order.paymentType} </span>
-            <span>Total Amount :${order.amount} </span>
+      {myOrders.length === 0 ? (
+        <div className="text-center py-16 bg-white border border-gray-100 rounded-3xl p-8 shadow-xs">
+          <span className="text-5xl">📦</span>
+          <h2 className="text-xl font-bold text-gray-800 mt-4">No Orders Placed Yet</h2>
+          <p className="text-gray-400 font-semibold text-xs mt-1 max-w-xs mx-auto mb-6">
+            You haven't ordered anything yet. Give it a try, we deliver in 10 minutes!
           </p>
-          {order.items.map((item, index) => (
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {myOrders.map((order, index) => (
             <div
               key={index}
-              className={`relative bg-white text-gray-800/70 ${
-                order.items.length !== index + 1 && "border-b"
-              } border-gray-300 flex flex-col md:flex-row md:items-center  justify-between p-4 py-5 w-full max-w-4xl`}
+              className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition duration-200"
             >
-              <div className="flex items-center mb-4 md:mb-0">
-                <div className="p-4 rounded-lg">
-                  <img
-                    src={item.product.image[0] && (item.product.image[0].startsWith('http') ? item.product.image[0] : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/images/${item.product.image[0]}`)}
-                    alt=""
-                    className="w-16 h-16"
-                  />
+              {/* Header section */}
+              <div className="flex flex-wrap justify-between items-center gap-4 pb-4 border-b border-gray-50 text-xs font-semibold text-gray-500">
+                <div>
+                  <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Order ID</span>
+                  <span className="font-bold text-black text-sm">{order._id}</span>
                 </div>
-
-                <div className="ml-4">
-                  <h2 className="text-xl font-medium">{item.product.name}</h2>
-                  <p>{item.product.category}</p>
+                <div>
+                  <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Payment</span>
+                  <span className="font-bold text-black bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md mt-0.5 inline-block">{order.paymentType}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Total Amount</span>
+                  <span className="font-black text-primary text-base">${order.amount.toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Order Status</span>
+                  <span className={`px-3 py-1 rounded-full font-bold text-[10px] uppercase mt-0.5 inline-block ${
+                    order.status.toLowerCase() === "delivered" 
+                      ? "bg-emerald-100 text-emerald-800" 
+                      : "bg-primary/10 text-primary"
+                  }`}>
+                    {order.status}
+                  </span>
                 </div>
               </div>
 
-              <div className=" text-lg font-medium">
-                <p>Quantity:{item.quantity || "1"}</p>
-                <p>Status:{order.status}</p>
-                <p>Date:{new Date(order.createdAt).toLocaleString()}</p>
+              {/* Items listing */}
+              <div className="divide-y divide-gray-50">
+                {order.items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="py-4 flex items-center justify-between gap-4 text-xs font-semibold"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-14 h-14 bg-gray-50 border border-gray-100 rounded-xl p-1 flex items-center justify-center">
+                        <img
+                          src={item.product?.image?.[0] && (item.product.image[0].startsWith('http') ? item.product.image[0] : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/images/${item.product.image[0]}`)}
+                          alt={item.product?.name || "Product"}
+                          className="max-h-full object-contain"
+                        />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-gray-800">{item.product?.name || "Product Item"}</h3>
+                        <p className="text-gray-400 mt-0.5 font-medium">Qty: {item.quantity || 1} • {item.product?.category}</p>
+                      </div>
+                    </div>
+                    <span className="font-bold text-gray-900 text-sm">
+                      ${((item.product?.offerPrice || 0) * (item.quantity || 1)).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <p className=" text-lg">
-                Amount:${item.product.offerPrice * item.quantity}
-              </p>
+
+              {/* Status Timeline Stepper */}
+              <div className="mt-6 border-t border-gray-50 pt-6">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-5">Delivery Timeline Status</p>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-2">
+                  {getTimelineSteps(order.status).map((step, idx) => (
+                    <div key={idx} className="flex-1 w-full flex sm:flex-col items-center gap-3 sm:gap-1.5">
+                      {/* Bubble with Line */}
+                      <div className="flex items-center w-full">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 transition duration-200 shrink-0 ${
+                          step.completed ? "bg-primary border-primary text-white" : "bg-white border-gray-200 text-gray-400"
+                        }`}>
+                          {step.completed ? "✓" : idx + 1}
+                        </div>
+                        {idx < 4 && (
+                          <div className={`hidden sm:block h-0.5 flex-1 ml-2 ${
+                            step.completed ? "bg-primary" : "bg-gray-100"
+                          }`} />
+                        )}
+                      </div>
+                      
+                      {/* Label details */}
+                      <div className="text-left sm:text-center">
+                        <p className={`text-[11px] font-bold ${
+                          step.active ? "text-primary font-black" : step.completed ? "text-gray-800" : "text-gray-400"
+                        }`}>
+                          {step.name}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
         </div>
-      ))}
+      )}
     </div>
   );
 };
+
 export default MyOrders;
