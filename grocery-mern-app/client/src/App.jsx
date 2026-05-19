@@ -16,6 +16,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AddProduct from "./pages/admin/AddProduct";
 import ProductList from "./pages/admin/ProductList";
 import Orders from "./pages/admin/Orders";
+import Analytics from "./pages/admin/Analytics";
 import VerifyPayment from "./pages/VerifyPayment";
 
 const App = () => {
@@ -42,7 +43,11 @@ const App = () => {
             path="/admin"
             element={isAdmin ? <AdminLayout /> : <AdminLogin />}
           >
-            <Route index element={isAdmin ? <AddProduct /> : null} />
+            <Route index element={isAdmin ? <Analytics /> : null} />
+            <Route
+              path="add-product"
+              element={isAdmin ? <AddProduct /> : null}
+            />
             <Route
               path="product-list"
               element={isAdmin ? <ProductList /> : null}

@@ -60,3 +60,93 @@ export const adminLogout = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// get analytics data for admin dashboard: /api/admin/analytics
+import Order from "../models/order.model.js";
+import Product from "../models/product.model.js";
+
+export const getAnalytics = async (req, res) => {
+  try {
+    const orders = await Order.find({
+      $or: [{ paymentType: "COD" }, { isPaid: true }],
+    }).populate({
+      path: "items.product",
+      model: "Product",
+    });
+
+    const totalOrders = orders.length;
+    let totalSales = 0;
+    const statusCounts = {
+      placed: 0,
+      packed: 0,
+      shipped: 0,
+      outForDelivery: 0,
+      delivered: 0,
+    };
+
+    const categorySales = {};
+    const dailySalesMap = {};
+
+    // Initialize last 7 days of daily sales
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      dailySalesMap[dateStr] = 0;
+    }
+
+    orders.forEach((order) => {
+      totalSales += order.amount;
+
+      // Status aggregation
+      const status = (order.status || "").toLowerCase();
+      if (status.includes("placed")) statusCounts.placed++;
+      else if (status.includes("packed")) statusCounts.packed++;
+      else if (status.includes("shipped")) statusCounts.shipped++;
+      else if (status.includes("delivery")) statusCounts.outForDelivery++;
+      else if (status.includes("delivered")) statusCounts.delivered++;
+
+      // Daily sales aggregation
+      const orderDate = new Date(order.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      if (dailySalesMap[orderDate] !== undefined) {
+        dailySalesMap[orderDate] += order.amount;
+      }
+
+      // Category sales aggregation
+      order.items.forEach((item) => {
+        let category = "Unknown";
+        if (item.product && typeof item.product === "object") {
+          category = item.product.category || "Unknown";
+        }
+        categorySales[category] = (categorySales[category] || 0) + (item.quantity || 1);
+      });
+    });
+
+    const outOfStockProducts = await Product.find({ inStock: false }).limit(10);
+
+    const dailySalesTrend = Object.keys(dailySalesMap).map((date) => ({
+      date,
+      sales: parseFloat(dailySalesMap[date].toFixed(2)),
+    }));
+
+    const categoryBreakdown = Object.keys(categorySales).map((name) => ({
+      name,
+      value: categorySales[name],
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalOrders,
+        totalSales: parseFloat(totalSales.toFixed(2)),
+        statusCounts,
+        dailySalesTrend,
+        categoryBreakdown,
+        outOfStockProducts,
+      },
+    });
+  } catch (error) {
+    console.error("Error in getAnalytics:", error);
+    res.status(500).json({ message: "Failed to load analytics data", success: false });
+  }
+};
