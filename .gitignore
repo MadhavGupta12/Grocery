@@ -6,6 +6,7 @@ node_modules/
 .env
 .env.local
 .env.*.local
+*/.env
 
 # Build outputs
 dist/
@@ -31,5 +32,5 @@ Thumbs.db
 # Uploads
 uploads/
 
-# Package locks (optional - uncomment if you want to exclude)
+# Package locks
 # package-lock.json
