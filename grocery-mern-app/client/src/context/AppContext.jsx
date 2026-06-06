@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
+axios.defaults.baseURL =
+  import.meta.env.VITE_BACKEND_URL || "https://grocery-backend-mz5b.onrender.com";
 
 // Attach Bearer Token to headers if cookies are blocked by cross-origin policies
 axios.interceptors.request.use(

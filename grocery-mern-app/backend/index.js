@@ -29,19 +29,25 @@ import { autoProgressOrders } from "./services/orderAutomation.js";
 const app = express();
 
 await connectCloudinary();
-// allow multiple origins
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "https://grocery-frontend.onrender.com",
+  "https://grocery-frontend1.onrender.com",
   process.env.CLIENT_URL,
-].filter(Boolean);
+  process.env.FRONTEND_URL,
+  ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",") : []),
+]
+  .map((origin) => origin?.trim())
+  .filter(Boolean);
 
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowed = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", process.env.CLIENT_URL].filter(Boolean);
-    if (!origin || allowed.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(null, false);
     }
   },
   credentials: true,

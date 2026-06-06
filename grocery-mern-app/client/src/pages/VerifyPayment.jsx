@@ -4,6 +4,10 @@ import { useAppContext } from "../context/AppContext";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+axios.defaults.baseURL =
+  import.meta.env.VITE_BACKEND_URL || "https://grocery-backend-mz5b.onrender.com";
+axios.defaults.withCredentials = true;
+
 const VerifyPayment = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
