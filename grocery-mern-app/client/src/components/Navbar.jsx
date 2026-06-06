@@ -60,9 +60,9 @@ useEffect(() => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm transition-all duration-300">
       {/* Top Banner: Promo or Speed info */}
-      <div className="bg-primary text-white text-center py-1 text-xs font-semibold tracking-wide">
+      <div className="bg-primary text-white text-center py-1 text-xs font-semibold tracking-wide animate-pulse">
         ⚡ Superfast 10-Minute Delivery to your doorstep!
       </div>
 
@@ -72,42 +72,68 @@ useEffect(() => {
           
           {/* Logo & Delivery Info */}
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center">
-              <span className="text-3xl font-black italic text-primary tracking-tighter">Mapta</span>
-              <span className="text-accent text-3xl font-black font-sans">.</span>
+            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity duration-300">
+              <span className="text-3xl font-black italic text-primary tracking-tighter hover:scale-110 transition-transform duration-300">Mapta</span>
+              <span className="text-accent text-3xl font-black font-sans animate-bounce-slow">.</span>
             </Link>
 
             {/* Delivery Time & Address Card */}
-            <div className="hidden md:flex flex-col pl-6 border-l border-gray-200">
-              <div className="flex items-center gap-1.5 text-black font-extrabold text-sm tracking-tight">
-                <span>⚡</span>
+            <div className="hidden md:flex flex-col pl-6 border-l border-gray-200 hover:border-primary/30 transition-colors duration-300">
+              <div className="flex items-center gap-1.5 text-black font-extrabold text-sm tracking-tight hover:text-primary transition-colors duration-300">
+                <span className="animate-bounce-slow">⚡</span>
                 <span>Delivering in 10 Mins</span>
               </div>
               <div 
                 onClick={() => user ? navigate("/cart") : setShowUserLogin(true)}
-                className="text-xs text-gray-500 font-semibold cursor-pointer hover:text-primary flex items-center gap-1 mt-0.5"
+                className="text-xs text-gray-500 font-semibold cursor-pointer hover:text-primary hover:scale-105 flex items-center gap-1 mt-0.5 transition-all duration-300"
               >
                 <span className="truncate max-w-[200px]">{displayAddress}</span>
-                <span>▼</span>
+                <span className="group-hover:translate-y-0.5">▼</span>
               </div>
             </div>
           </div>
 
-          {/* Center Search Bar (Desktop) */}
+          {/* Center Search Bar (Desktop) - Blinkit Style */}
           <div className="flex-1 max-w-[600px] relative hidden sm:block">
-            <input
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="w-full bg-[#f3f4f6] text-gray-800 text-sm pl-11 pr-4 py-2.5 rounded-xl border border-transparent focus:border-primary/20 focus:bg-white focus:shadow-sm outline-none transition placeholder-gray-400 font-medium"
-              type="text"
-              placeholder="Search for 'milk', 'bread', 'banana' or 'veggies'..."
-            />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2" />
-                <path d="M14 14L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </span>
+            <div className="relative">
+              <input
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="w-full bg-gray-100 text-gray-800 text-sm pl-11 pr-4 py-3 rounded-2xl border-2 border-transparent focus:border-emerald-500 focus:bg-white focus:shadow-lg outline-none transition placeholder-gray-500 font-semibold hover:bg-white"
+                type="text"
+                placeholder="Search 'milk', 'tomato', 'bread'..."
+              />
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2" />
+                  <path d="M14 14L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </span>
+              
+              {/* Search suggestions dropdown */}
+              {searchQuery.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-100 rounded-xl shadow-lg z-50 max-h-64 overflow-y-auto">
+                  <div className="p-3">
+                    <p className="text-xs font-black text-gray-500 uppercase mb-2">Quick Results</p>
+                    {["milk", "bread", "tomato", "banana", "eggs"].map((item) => (
+                      item.includes(searchQuery.toLowerCase()) && (
+                        <div
+                          key={item}
+                          onClick={() => {
+                            setSearchQuery(item);
+                            navigate("/products");
+                          }}
+                          className="px-4 py-2.5 hover:bg-emerald-50 rounded-lg cursor-pointer flex items-center gap-3 transition-colors border-b border-gray-100 last:border-0"
+                        >
+                          <span className="text-gray-400">🔍</span>
+                          <span className="text-gray-700 font-medium text-sm capitalize">{item}</span>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right Controls */}
@@ -163,14 +189,14 @@ useEffect(() => {
             {/* Wishlist Icon */}
             <button
               onClick={() => navigate("/wishlist")}
-              className="relative p-2 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition cursor-pointer text-gray-600 hover:text-primary flex items-center justify-center"
+              className="relative p-2 rounded-xl hover:bg-gray-50 border border-transparent hover:border-primary/20 transition-all cursor-pointer text-gray-600 hover:text-primary hover:scale-110 flex items-center justify-center duration-300"
               title="My Wishlist"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill={wishlistIds?.length > 0 ? "#ef4444" : "none"} xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" stroke={wishlistIds?.length > 0 ? "#ef4444" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               {wishlistIds?.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white shadow-xs">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white shadow-xs animate-pulse">
                   {wishlistIds.length}
                 </span>
               )}
@@ -179,7 +205,7 @@ useEffect(() => {
             {/* Zepto-Style Cart Button */}
             <button
               onClick={() => navigate("/cart")}
-              className="bg-success text-white px-4 py-2.5 rounded-xl flex items-center gap-2.5 shadow-md hover:bg-success/95 transition font-semibold text-sm cursor-pointer"
+              className="bg-success text-white px-4 py-2.5 rounded-xl flex items-center gap-2.5 shadow-md hover:bg-success/95 hover:shadow-lg transition-all duration-300 font-semibold text-sm cursor-pointer hover:scale-105 active:scale-95"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 3H5L5.4 5M5.4 5H21L19 13H7M5.4 5L7 13M7 13L4.7 17.6C4.5 18 4.8 18.5 5.3 18.5H19M9 21.5C9.6 21.5 10 21.1 10 20.5C10 19.9 9.6 19.5 9 19.5C8.4 19.5 8 19.9 8 20.5C8 21.1 8.4 21.5 9 21.5ZM17 21.5C17.6 21.5 18 21.1 18 20.5C18 19.9 17.6 19.5 17 19.5C16.4 19.5 16 19.9 16 20.5C16 21.1 16.4 21.5 17 21.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

@@ -153,7 +153,7 @@ VITE_BACKEND_URL=http://localhost:5000
 - Password hashing with bcryptjs
 - CORS protection
 - PayPal secure payment verification
-- Role-based access control (user vs seller)
+- Role-based access control (user vs seller) 
 
 ## 📝 API Documentation
 

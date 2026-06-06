@@ -172,20 +172,37 @@ const getCart = useCallback(() => {
 
   if (cartArray.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center max-w-md mx-auto">
-        <div className="w-36 h-36 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-          <span className="text-6xl">🛒</span>
+      <div className="flex flex-col items-center justify-center py-32 text-center max-w-2xl mx-auto animate-slide-in-up">
+        <div className="relative mb-8">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-3xl"></div>
+          <div className="relative w-48 h-48 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full flex items-center justify-center border-2 border-primary/20">
+            <span className="text-8xl animate-bounce-slow">🛒</span>
+          </div>
         </div>
-        <h2 className="text-2xl font-black text-gray-900 mb-2">Your Cart is Empty</h2>
-        <p className="text-gray-500 font-semibold text-xs mb-8 leading-relaxed">
-          Looks like you haven't added any products to your basket yet. Explore our categories to start shopping.
+        
+        <h2 className="text-3xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-3 tracking-tight">
+          Your Cart is Empty
+        </h2>
+        
+        <p className="text-gray-600 font-medium text-base mb-8 leading-relaxed max-w-md">
+          Looks like you haven't added any products to your basket yet. Explore our amazing selection of fresh groceries!
         </p>
-        <button
-          onClick={() => navigate("/products")}
-          className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-md hover:bg-primary/95 active:scale-95 transition cursor-pointer text-sm"
-        >
-          Browse Products
-        </button>
+
+        <div className="flex flex-col gap-3 w-full">
+          <button
+            onClick={() => navigate("/products")}
+            className="w-full py-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer text-base flex items-center justify-center gap-2"
+          >
+            <span>🛍️</span>
+            Start Shopping
+          </button>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full py-4 bg-white border-2 border-gray-200 text-primary font-bold rounded-2xl hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer text-base"
+          >
+            Continue Browsing
+          </button>
+        </div>
       </div>
     );
   }

@@ -10,10 +10,12 @@ export const getImageUrl = (imagePath) => {
 
   const pathStr = String(imagePath);
 
+  // If it's already a full URL (http/https), return as-is
   if (/^https?:\/\//i.test(pathStr)) {
     return pathStr;
   }
 
+  // Otherwise, build backend image URL
   const backendUrl = stripTrailingSlash(
     import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL
   );

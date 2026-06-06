@@ -37,7 +37,12 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    callback(null, true); // Allow any origin dynamically
+    const allowed = ["http://localhost:5173", "http://localhost:3000", process.env.CLIENT_URL].filter(Boolean);
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
   },
   credentials: true,
 };

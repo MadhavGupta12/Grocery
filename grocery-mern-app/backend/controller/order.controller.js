@@ -42,10 +42,14 @@ export const placeOrderCOD = async (req, res) => {
         .json({ message: "Invalid order details", success: false });
     }
     // calculate amount using items;
-    let amount = await items.reduce(async (acc, item) => {
+    let amount = 0;
+    for (const item of items) {
       const product = await Product.findById(item.product);
-      return (await acc) + product.offerPrice * item.quantity;
-    }, 0);
+      if (!product) {
+        return res.status(404).json({ success: false, message: `Product ${item.product} not found` });
+      }
+      amount += product.offerPrice * item.quantity;
+    }
 
     // Apply Coupon discount if valid
     let discountPct = 0;
@@ -177,11 +181,11 @@ export const createPayPalOrder = async (req, res) => {
             },
           },
           items: items.map((item) => ({
-            name: item.product,
+            name: `Product ${item.product}`,
             quantity: item.quantity,
             unit_amount: {
               currency_code: "USD",
-              value: (item.offerPrice / 100).toFixed(2), // We can send standard item price, PayPal will verify the breakdowns sum up. If not, we can adjust.
+              value: ((item.quantity && item.product) ? amount / items.length / 100 : 0).toFixed(2),
             },
           })),
         },
@@ -242,11 +246,15 @@ export const createPayPalOrder = async (req, res) => {
       discount: discountAmount,
     });
 
+    const approveLink = response.data.links?.find((link) => link.rel === "approve");
+    if (!approveLink?.href) {
+      return res.status(400).json({ success: false, message: "PayPal approval URL not found" });
+    }
     res.status(201).json({
       success: true,
       orderId: order._id,
       paypalOrderId: orderId,
-      approvalUrl: response.data.links.find((link) => link.rel === "approve")?.href,
+      approvalUrl: approveLink.href,
     });
   } catch (error) {
     console.error("Error creating PayPal order:", error);
