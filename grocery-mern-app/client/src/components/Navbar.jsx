@@ -1,24 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
-import { assets } from "../assets/assets";
 import toast from "react-hot-toast";
 
 const Navbar = () => {
   const {
-    user,
-    setUser,
-    setShowUserLogin,
-    navigate,
-    searchQuery,
-    setSearchQuery,
-    cartCount,
-    totalCartAmount,
-    axios,
-    wishlistIds,
+    user, setUser, setShowUserLogin, navigate,
+    searchQuery, setSearchQuery,
+    cartCount, totalCartAmount, axios, wishlistIds,
   } = useAppContext();
 
-  const [displayAddress, setDisplayAddress] = useState("Select Delivery Location");
+  const [displayAddress, setDisplayAddress] = useState("Select Location");
+  const [scrolled, setScrolled] = useState(false);
 
   const logout = async () => {
     try {
@@ -37,204 +30,178 @@ const Navbar = () => {
     }
   };
 
-useEffect(() => {
-     if (user) {
-       axios.get("/api/address/get")
-         .then(({ data }) => {
-           if (data.success && data.addresses && data.addresses.length > 0) {
-             const addr = data.addresses[0];
-             setDisplayAddress(`${addr.street}, ${addr.city}`);
-           }
-         })
-         .catch(() => {});
-     } else {
-       setDisplayAddress("Select Delivery Location");
-     }
-   }, [user, axios]);
+  useEffect(() => {
+    if (user) {
+      axios.get("/api/address/get")
+        .then(({ data }) => {
+          if (data.success && data.addresses?.length > 0) {
+            const addr = data.addresses[0];
+            setDisplayAddress(`${addr.street}, ${addr.city}`);
+          }
+        }).catch(() => {});
+    } else {
+      setDisplayAddress("Select Location");
+    }
+  }, [user, axios]);
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
-    if (window.location.pathname !== "/products") {
-      navigate("/products");
-    }
+    if (window.location.pathname !== "/products") navigate("/products");
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm transition-all duration-300">
-      {/* Top Banner: Promo or Speed info */}
-      <div className="bg-primary text-white text-center py-1 text-xs font-semibold tracking-wide animate-pulse">
-        ⚡ Superfast 10-Minute Delivery to your doorstep!
+    <header className={`sticky top-0 z-50 bg-white border-b border-gray-100 transition-all duration-300 ${scrolled ? "shadow-md" : "shadow-sm"}`}>
+
+      {/* Top Promo Bar - Unified Hybrid Gradient */}
+      <div className="brand-gradient-bg text-[#1a1a1a] text-center py-2 text-xs font-black tracking-wide flex items-center justify-center gap-2">
+        <span className="animate-bounce-slow">⚡</span>
+        Delivery in 10 minutes — Fresh groceries, superfast delivery
+        <span className="animate-bounce-slow">⚡</span>
       </div>
 
-      <div className="px-4 py-3 md:px-12 lg:px-24 flex flex-col gap-3">
-        {/* Main Row */}
-        <div className="flex items-center justify-between gap-4">
-          
-          {/* Logo & Delivery Info */}
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity duration-300">
-              <span className="text-3xl font-black italic text-primary tracking-tighter hover:scale-110 transition-transform duration-300">Mapta</span>
-              <span className="text-accent text-3xl font-black font-sans animate-bounce-slow">.</span>
-            </Link>
+      {/* Main Navbar */}
+      <div className="px-4 py-3 md:px-10 lg:px-16 flex items-center gap-4">
 
-            {/* Delivery Time & Address Card */}
-            <div className="hidden md:flex flex-col pl-6 border-l border-gray-200 hover:border-primary/30 transition-colors duration-300">
-              <div className="flex items-center gap-1.5 text-black font-extrabold text-sm tracking-tight hover:text-primary transition-colors duration-300">
-                <span className="animate-bounce-slow">⚡</span>
-                <span>Delivering in 10 Mins</span>
-              </div>
-              <div 
-                onClick={() => user ? navigate("/cart") : setShowUserLogin(true)}
-                className="text-xs text-gray-500 font-semibold cursor-pointer hover:text-primary hover:scale-105 flex items-center gap-1 mt-0.5 transition-all duration-300"
-              >
-                <span className="truncate max-w-[200px]">{displayAddress}</span>
-                <span className="group-hover:translate-y-0.5">▼</span>
-              </div>
-            </div>
-          </div>
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-1 shrink-0 hover:opacity-90 transition-opacity">
+          <span className="text-2xl font-black text-[#1a1a1a] tracking-tight">
+            Mapta
+          </span>
+          <span className="w-2.5 h-2.5 rounded-full mb-3 inline-block bg-[#0c831f]"></span>
+        </Link>
 
-          {/* Center Search Bar (Desktop) - Blinkit Style */}
-          <div className="flex-1 max-w-[600px] relative hidden sm:block">
-            <div className="relative">
-              <input
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="w-full bg-gray-100 text-gray-800 text-sm pl-11 pr-4 py-3 rounded-2xl border-2 border-transparent focus:border-emerald-500 focus:bg-white focus:shadow-lg outline-none transition placeholder-gray-500 font-semibold hover:bg-white"
-                type="text"
-                placeholder="Search 'milk', 'tomato', 'bread'..."
-              />
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2" />
-                  <path d="M14 14L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </span>
-              
-              {/* Search suggestions dropdown */}
-              {searchQuery.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-100 rounded-xl shadow-lg z-50 max-h-64 overflow-y-auto">
-                  <div className="p-3">
-                    <p className="text-xs font-black text-gray-500 uppercase mb-2">Quick Results</p>
-                    {["milk", "bread", "tomato", "banana", "eggs"].map((item) => (
-                      item.includes(searchQuery.toLowerCase()) && (
-                        <div
-                          key={item}
-                          onClick={() => {
-                            setSearchQuery(item);
-                            navigate("/products");
-                          }}
-                          className="px-4 py-2.5 hover:bg-emerald-50 rounded-lg cursor-pointer flex items-center gap-3 transition-colors border-b border-gray-100 last:border-0"
-                        >
-                          <span className="text-gray-400">🔍</span>
-                          <span className="text-gray-700 font-medium text-sm capitalize">{item}</span>
-                        </div>
-                      )
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="hidden md:block w-px h-10 bg-gray-200 mx-1"></div>
 
-          {/* Right Controls */}
-          <div className="flex items-center gap-4">
-            {/* Admin Link */}
-            <Link 
-              to="/admin" 
-              className="text-sm font-semibold text-gray-600 hover:text-primary hidden lg:block"
-            >
-              Admin Panel
-            </Link>
+        {/* Delivery Info */}
+        <div
+          className="hidden md:flex flex-col cursor-pointer group shrink-0"
+          onClick={() => user ? navigate("/cart") : setShowUserLogin(true)}
+        >
+          <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 text-[#0c831f]">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#0c831f" strokeWidth="2.5"/><path d="M12 6v6l4 2" stroke="#0c831f" strokeWidth="2.5" strokeLinecap="round"/></svg>
+            Delivery in 10 mins
+          </span>
+          <span className="text-[13px] font-bold text-[#1a1a1a] flex items-center gap-1 group-hover:text-[#FC8019] transition-colors">
+            <span className="truncate max-w-[160px]">{displayAddress}</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+          </span>
+        </div>
 
-            {/* Auth Button */}
-            {user ? (
-              <div className="relative group py-2">
-                <div className="flex items-center gap-2 cursor-pointer">
-                  <img src={assets.profile_icon} alt="Profile" className="w-8 h-8 rounded-full border border-gray-200" />
-                  <span className="text-sm font-semibold text-gray-700 hidden md:inline">
-                    Hi, {user.name.split(" ")[0]}
-                  </span>
-                </div>
-                <ul className="hidden group-hover:block absolute right-0 top-full bg-white shadow-xl border border-gray-100 py-1.5 w-40 rounded-xl z-50 text-sm font-semibold text-gray-700">
-                  <li
-                    onClick={() => navigate("/my-orders")}
-                    className="px-4 py-2 hover:bg-gray-50 cursor-pointer flex items-center gap-2"
-                  >
-                    📦 My Orders
-                  </li>
-                  <li
-                    onClick={() => navigate("/admin")}
-                    className="px-4 py-2 hover:bg-gray-50 cursor-pointer lg:hidden flex items-center gap-2"
-                  >
-                    🏪 Admin Panel
-                  </li>
-                  <hr className="border-gray-100 my-1" />
-                  <li 
-                    className="px-4 py-2 hover:bg-red-50 text-red-500 cursor-pointer flex items-center gap-2" 
-                    onClick={logout}
-                  >
-                    🚪 Logout
-                  </li>
-                </ul>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowUserLogin(true)}
-                className="cursor-pointer px-5 py-2 text-sm text-primary font-bold hover:bg-primary/5 rounded-xl transition"
-              >
-                Login
+        {/* Search */}
+        <div className="flex-1 max-w-2xl relative">
+          <div className="relative group">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#FC8019] transition-colors">
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+                <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2.2"/>
+                <path d="M14 14L18 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+              </svg>
+            </span>
+            <input
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="w-full bg-gray-50 border-2 border-gray-200 text-gray-800 text-sm pl-10 pr-4 py-2.5 rounded-xl outline-none transition-all duration-200 placeholder-gray-400 font-medium focus:bg-white focus:border-[#FC8019]"
+              type="text"
+              placeholder="Search for 'milk', 'bread', 'tomato'..."
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#FC8019] transition-colors cursor-pointer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
               </button>
             )}
-
-            {/* Wishlist Icon */}
-            <button
-              onClick={() => navigate("/wishlist")}
-              className="relative p-2 rounded-xl hover:bg-gray-50 border border-transparent hover:border-primary/20 transition-all cursor-pointer text-gray-600 hover:text-primary hover:scale-110 flex items-center justify-center duration-300"
-              title="My Wishlist"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill={wishlistIds?.length > 0 ? "#ef4444" : "none"} xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" stroke={wishlistIds?.length > 0 ? "#ef4444" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              {wishlistIds?.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white shadow-xs animate-pulse">
-                  {wishlistIds.length}
-                </span>
-              )}
-            </button>
-
-            {/* Zepto-Style Cart Button */}
-            <button
-              onClick={() => navigate("/cart")}
-              className="bg-success text-white px-4 py-2.5 rounded-xl flex items-center gap-2.5 shadow-md hover:bg-success/95 hover:shadow-lg transition-all duration-300 font-semibold text-sm cursor-pointer hover:scale-105 active:scale-95"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3H5L5.4 5M5.4 5H21L19 13H7M5.4 5L7 13M7 13L4.7 17.6C4.5 18 4.8 18.5 5.3 18.5H19M9 21.5C9.6 21.5 10 21.1 10 20.5C10 19.9 9.6 19.5 9 19.5C8.4 19.5 8 19.9 8 20.5C8 21.1 8.4 21.5 9 21.5ZM17 21.5C17.6 21.5 18 21.1 18 20.5C18 19.9 17.6 19.5 17 19.5C16.4 19.5 16 19.9 16 20.5C16 21.1 16.4 21.5 17 21.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span>{cartCount() > 0 ? `${cartCount()} items` : "My Cart"}</span>
-              {cartCount() > 0 && (
-                <span className="border-l border-white/20 pl-2.5 font-bold">
-                  ${(totalCartAmount() + (totalCartAmount() * 2) / 100).toFixed(2)}
-                </span>
-              )}
-            </button>
           </div>
         </div>
 
-        {/* Mobile Search Bar Row (sm and under) */}
-        <div className="relative block sm:hidden pb-1">
+        {/* Right Controls */}
+        <div className="flex items-center gap-2 shrink-0">
+
+          {/* Admin */}
+          <Link to="/admin" className="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-[#1a1a1a] px-3 py-2 rounded-lg hover:bg-gray-50 transition-all">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="2"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="2"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="2"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="2"/></svg>
+            Admin
+          </Link>
+
+          {/* Wishlist */}
+          <button onClick={() => navigate("/wishlist")} className="relative p-2 rounded-xl hover:bg-gray-50 transition-all cursor-pointer" title="Wishlist">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill={wishlistIds?.length > 0 ? "#ef4444" : "none"}>
+              <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" stroke={wishlistIds?.length > 0 ? "#ef4444" : "#9ca3af"} strokeWidth="2"/>
+            </svg>
+            {wishlistIds?.length > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white">
+                {wishlistIds.length}
+              </span>
+            )}
+          </button>
+
+          {/* Auth */}
+          {user ? (
+            <div className="relative group py-1">
+              <div className="flex items-center gap-2 cursor-pointer px-2.5 py-1.5 rounded-xl hover:bg-gray-50 transition-all">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white text-sm shrink-0 bg-[#FC8019]">
+                  {user.name?.charAt(0)?.toUpperCase()}
+                </div>
+                <div className="hidden md:block">
+                  <p className="text-[10px] text-gray-400 font-medium leading-none">Hello,</p>
+                  <p className="text-sm font-bold text-[#1a1a1a] leading-tight">{user.name.split(" ")[0]}</p>
+                </div>
+              </div>
+              <ul className="hidden group-hover:block absolute right-0 top-full bg-white shadow-2xl border border-gray-100 py-2 w-44 rounded-2xl z-50 text-sm font-semibold text-gray-700">
+                <li onClick={() => navigate("/my-orders")} className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer flex items-center gap-2.5 transition-colors">📦 My Orders</li>
+                <li onClick={() => navigate("/wishlist")} className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer flex items-center gap-2.5 transition-colors">❤️ Wishlist</li>
+                <li onClick={() => navigate("/admin")} className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer lg:hidden flex items-center gap-2.5 transition-colors">🏪 Admin Panel</li>
+                <hr className="border-gray-100 my-1"/>
+                <li className="px-4 py-2.5 hover:bg-red-50 text-red-500 cursor-pointer flex items-center gap-2.5 transition-colors" onClick={logout}>🚪 Logout</li>
+              </ul>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowUserLogin(true)}
+              className="cursor-pointer px-4 py-2 text-sm text-[#1a1a1a] font-bold hover:bg-gray-50 rounded-xl transition-all border border-gray-200 hover:border-gray-300"
+            >
+              Login
+            </button>
+          )}
+
+          {/* Cart Button */}
+          <button
+            onClick={() => navigate("/cart")}
+            className="text-white px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:shadow-md transition-all duration-200 font-bold text-sm cursor-pointer active:scale-95 bg-[#0c831f] hover:bg-[#0a7019]"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M3 3H5L5.4 5M5.4 5H21L19 13H7M5.4 5L7 13M7 13L4.7 17.6C4.5 18 4.8 18.5 5.3 18.5H19M9 21.5C9.6 21.5 10 21.1 10 20.5C10 19.9 9.6 19.5 9 19.5C8.4 19.5 8 19.9 8 20.5C8 21.1 8.4 21.5 9 21.5ZM17 21.5C17.6 21.5 18 21.1 18 20.5C18 19.9 17.6 19.5 17 19.5C16.4 19.5 16 19.9 16 20.5C16 21.1 16.4 21.5 17 21.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <div className="flex flex-col items-start leading-none">
+              {cartCount() > 0 ? (
+                <>
+                  <span className="text-[10px] font-medium opacity-80">{cartCount()} item{cartCount() > 1 ? "s" : ""}</span>
+                  <span className="text-sm font-black">₹{(totalCartAmount() * 1.02).toFixed(0)}</span>
+                </>
+              ) : (
+                <span className="text-sm font-bold">My Cart</span>
+              )}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Search */}
+      <div className="px-4 pb-2.5 block sm:hidden">
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2"/><path d="M14 14L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+          </span>
           <input
             value={searchQuery}
             onChange={handleSearchChange}
-            className="w-full bg-[#f3f4f6] text-gray-800 text-sm pl-11 pr-4 py-2 rounded-xl border border-transparent focus:border-primary/20 focus:bg-white focus:shadow-sm outline-none transition placeholder-gray-400 font-medium"
+            className="w-full bg-gray-50 border-2 border-gray-200 focus:border-[#FC8019] text-gray-800 text-sm pl-9 pr-4 py-2 rounded-xl outline-none transition-all placeholder-gray-400 font-medium focus:bg-white"
             type="text"
-            placeholder="Search for 'milk', 'chips', 'apple'..."
+            placeholder="Search groceries..."
           />
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2" />
-              <path d="M14 14L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </span>
         </div>
       </div>
     </header>

@@ -126,8 +126,16 @@ const Orders = () => {
 
           <div className="flex flex-col text-sm gap-1">
             <p><span className="font-semibold text-gray-500">Method:</span> {order.paymentType}</p>
+            {order.upiTransactionId && (
+              <p><span className="font-semibold text-gray-500">UPI Ref:</span> {order.upiTransactionId}</p>
+            )}
             <p><span className="font-semibold text-gray-500">Date:</span> {order.orderDate || new Date(order.createdAt).toLocaleDateString()}</p>
-            <p><span className="font-semibold text-gray-500">Payment:</span> <span className={`font-bold ${order.isPaid ? 'text-emerald-600' : 'text-amber-600'}`}>{order.isPaid ? "Paid" : "Pending"}</span></p>
+            <p>
+              <span className="font-semibold text-gray-500">Payment:</span>{" "}
+              <span className={`font-bold ${order.isPaid ? "text-emerald-600" : "text-amber-600"}`}>
+                {order.paymentStatus === "pending_verification" ? "Verify UPI" : order.isPaid ? "Paid" : "Pending"}
+              </span>
+            </p>
             
             <div className="mt-2 flex flex-col gap-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Assign Rider</label>

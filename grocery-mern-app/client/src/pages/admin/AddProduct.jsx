@@ -2,14 +2,17 @@ import { assets, categories } from "../../assets/assets";
 import { useContext, useState } from "react";
 import { AppContext } from "../../context/AppContext";
 import toast from "react-hot-toast";
+import { buildProductImageUrl } from "../../utils/productImages";
 const AddProduct = () => {
   const { axios } = useContext(AppContext);
   const [files, setFiles] = useState([]);
+  const [autoImages, setAutoImages] = useState(true);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
+  const autoImagePreview = buildProductImageUrl(name, category);
 
   const handleSubmit = async (e) => {
     try {
@@ -22,8 +25,12 @@ const AddProduct = () => {
       formData.append("price", price);
       formData.append("offerPrice", offerPrice);
 
-      for (let i = 0; i < files.length; i++) {
-        formData.append("image", files[i]);
+      if (!autoImages) {
+        for (let i = 0; i < files.length; i++) {
+          if (files[i]) {
+            formData.append("image", files[i]);
+          }
+        }
       }
 
       const { data } = await axios.post("/api/product/add-product", formData);
@@ -47,36 +54,65 @@ const AddProduct = () => {
     <div className="py-10 flex flex-col justify-between bg-white">
       <form onSubmit={handleSubmit} className="md:p-10 p-4 space-y-5 max-w-lg">
         <div>
-          <p className="text-base font-medium">Product Image</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-base font-medium">Product Image</p>
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={autoImages}
+                onChange={(e) => {
+                  setAutoImages(e.target.checked);
+                  if (e.target.checked) setFiles([]);
+                }}
+                className="accent-indigo-500"
+              />
+              Auto from internet
+            </label>
+          </div>
           <div className="flex flex-wrap items-center gap-3 mt-2">
-            {Array(4)
-              .fill("")
-              .map((_, index) => (
-                <label key={index} htmlFor={`image${index}`}>
-                  <input
-                    onChange={(e) => {
-                      const updatedFiles = [...files];
-                      updatedFiles[index] = e.target.files[0];
-                      setFiles(updatedFiles);
-                    }}
-                    accept="image/*"
-                    type="file"
-                    id={`image${index}`}
-                    hidden
-                  />
-                  <img
-                    className="max-w-24 cursor-pointer"
-                    src={
-                      files[index]
-                        ? URL.createObjectURL(files[index])
-                        : assets.upload_area
-                    }
-                    alt="uploadArea"
-                    width={100}
-                    height={100}
-                  />
-                </label>
-              ))}
+            {autoImages ? (
+              <div className="flex items-center gap-3 rounded border border-gray-500/30 p-2">
+                <img
+                  className="h-24 w-24 object-contain bg-gray-50 rounded"
+                  src={autoImagePreview}
+                  alt="Automatic product preview"
+                  width={100}
+                  height={100}
+                />
+                <p className="text-sm text-gray-500 max-w-64">
+                  The image updates from the product name and category. Upload manually if you need a branded pack shot.
+                </p>
+              </div>
+            ) : (
+              Array(4)
+                .fill("")
+                .map((_, index) => (
+                  <label key={index} htmlFor={`image${index}`}>
+                    <input
+                      onChange={(e) => {
+                        const updatedFiles = [...files];
+                        updatedFiles[index] = e.target.files[0];
+                        setFiles(updatedFiles);
+                      }}
+                      accept="image/*"
+                      type="file"
+                      id={`image${index}`}
+                      hidden
+                    />
+                    <img
+                      className="max-w-24 cursor-pointer"
+                      src={
+                        files[index]
+                          ? URL.createObjectURL(files[index])
+                          : assets.upload_area
+                      }
+                      alt="uploadArea"
+                      width={100}
+                      height={100}
+                    />
+                  </label>
+                ))
+            )}
           </div>
         </div>
         <div className="flex flex-col gap-1 max-w-md">

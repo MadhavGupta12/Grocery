@@ -4,6 +4,7 @@ import { getImageUrl } from "../utils/getImageUrl";
 import { Link, useParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import toast from "react-hot-toast";
+import { buildProductImageUrl, buildProductPlaceholderImage } from "../utils/productImages";
 
 const SingleProduct = () => {
   const { products, navigate, addToCart, removeFromCart, cartItems, axios, fetchProducts, user, setShowUserLogin } = useAppContext();
@@ -113,6 +114,19 @@ const SingleProduct = () => {
                       src={imgUrl}
                       alt={`Thumbnail ${index + 1}`}
                       className="max-w-full max-h-full object-contain"
+                      onError={(e) => {
+                        const step = e.currentTarget.dataset.fallbackStep || "0";
+                        const fallback = buildProductImageUrl(product.name, product.category);
+                        if (step === "0") {
+                          e.currentTarget.dataset.fallbackStep = "1";
+                          e.currentTarget.src = e.currentTarget.src.includes("tse1.mm.bing.net")
+                            ? buildProductPlaceholderImage(product.name, product.category)
+                            : fallback;
+                        } else if (step === "1") {
+                          e.currentTarget.dataset.fallbackStep = "2";
+                          e.currentTarget.src = buildProductPlaceholderImage(product.name, product.category);
+                        }
+                      }}
                     />
                   </div>
                 );
@@ -125,6 +139,19 @@ const SingleProduct = () => {
                 src={getImageUrl(thumbnail)}
                 alt="Selected product"
                 className="max-h-[350px] object-contain hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  const step = e.currentTarget.dataset.fallbackStep || "0";
+                  const fallback = buildProductImageUrl(product.name, product.category);
+                  if (step === "0") {
+                    e.currentTarget.dataset.fallbackStep = "1";
+                    e.currentTarget.src = e.currentTarget.src.includes("tse1.mm.bing.net")
+                      ? buildProductPlaceholderImage(product.name, product.category)
+                      : fallback;
+                  } else if (step === "1") {
+                    e.currentTarget.dataset.fallbackStep = "2";
+                    e.currentTarget.src = buildProductPlaceholderImage(product.name, product.category);
+                  }
+                }}
               />
             </div>
           </div>

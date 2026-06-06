@@ -2,7 +2,7 @@ const DEFAULT_BACKEND_URL = "https://grocery-backend-mz5b.onrender.com";
 
 const stripTrailingSlash = (value) => {
   if (!value) return "";
-  return value.replace(/[\/\"\'\s]+$/, "").replace(/^[\"\'\s]+/, "");
+  return value.replace(/[/"'\s]+$/, "").replace(/^["'\s]+/, "");
 };
 
 export const getImageUrl = (imagePath) => {

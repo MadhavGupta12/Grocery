@@ -1,647 +1,454 @@
-import { useEffect, useState, useContext, useCallback } from "react";
-import { AppContext } from "../../context/AppContext";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { AppContext } from "../../context/AppContext";
+
+const emptyStats = {
+  totalOrders: 0,
+  totalSales: 0,
+  statusCounts: { placed: 0, packed: 0, shipped: 0, outForDelivery: 0, delivered: 0 },
+  dailySalesTrend: [],
+  categoryBreakdown: [],
+  outOfStockProducts: [],
+  paymentMethods: { cod: 0, paypal: 0, upi: 0 },
+  couponStats: { usageCount: 0, totalDiscount: 0, codes: [] },
+  orderValueDistribution: { under50: 0, fiftyTo100: 0, hundredTo200: 0, over200: 0 },
+};
+
+const currency = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
+
+const number = new Intl.NumberFormat("en-IN");
 
 const Analytics = () => {
   const { axios } = useContext(AppContext);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [theme, setTheme] = useState("cyberpunk");
-  const [realtimeTicks, setRealtimeTicks] = useState([]);
-  const [stats, setStats] = useState({
-    totalOrders: 0,
-    totalSales: 0,
-    statusCounts: { placed: 0, packed: 0, shipped: 0, outForDelivery: 0, delivered: 0 },
-    dailySalesTrend: [],
-    categoryBreakdown: [],
-    outOfStockProducts: [],
-    paymentMethods: { cod: 0, paypal: 0 },
-    couponStats: { usageCount: 0, totalDiscount: 0, codes: [] },
-    orderValueDistribution: { under50: 0, fiftyTo100: 0, hundredTo200: 0, over200: 0 },
-  });
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [stats, setStats] = useState(emptyStats);
+  const [events, setEvents] = useState([]);
 
-  // Fetch live stats
-  const fetchAnalytics = useCallback(async () => {
+  const fetchAnalytics = useCallback(async ({ silent = false } = {}) => {
     try {
+      if (silent) setRefreshing(true);
       const { data } = await axios.get("/api/admin/analytics");
+
       if (data.success) {
-        setStats(data.data);
+        setStats({ ...emptyStats, ...data.data });
+        setLastUpdated(new Date());
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Failed to load dashboard");
       }
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to load analytics dashboard");
+      toast.error(error.response?.data?.message || "Failed to load dashboard");
     } finally {
       setLoading(false);
+      setRefreshing(false);
+    }
+  }, [axios]);
+
+  const fetchEvents = useCallback(async () => {
+    try {
+      const { data } = await axios.get("/api/admin/events");
+      if (data.success) setEvents(data.events || []);
+    } catch {
+      setEvents([]);
     }
   }, [axios]);
 
   useEffect(() => {
     fetchAnalytics();
-  }, [fetchAnalytics]);
-
-  // Fetch REAL order events from backend, refresh every 30s
-  const fetchEvents = useCallback(async () => {
-    try {
-      const { data } = await axios.get("/api/admin/events");
-      if (data.success && data.events.length > 0) {
-        setRealtimeTicks(data.events);
-      }
-    } catch (err) {
-      console.warn("Events fetch failed:", err.message);
-    }
-  }, [axios]);
+    fetchEvents();
+  }, [fetchAnalytics, fetchEvents]);
 
   useEffect(() => {
-    fetchEvents();
-    const interval = setInterval(fetchEvents, 30000);
+    const interval = setInterval(() => {
+      fetchAnalytics({ silent: true });
+      fetchEvents();
+    }, 30000);
+
     return () => clearInterval(interval);
-  }, [fetchEvents]);
+  }, [fetchAnalytics, fetchEvents]);
+
+  const derived = useMemo(() => {
+    const totalOrders = stats.totalOrders || 0;
+    const totalSales = stats.totalSales || 0;
+    const averageOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0;
+    const activeOrders =
+      (stats.statusCounts.placed || 0) +
+      (stats.statusCounts.packed || 0) +
+      (stats.statusCounts.shipped || 0) +
+      (stats.statusCounts.outForDelivery || 0);
+    const deliveredRate = totalOrders > 0
+      ? Math.round(((stats.statusCounts.delivered || 0) / totalOrders) * 100)
+      : 0;
+    const paypalShare = totalOrders > 0
+      ? Math.round(((stats.paymentMethods.paypal || 0) / totalOrders) * 100)
+      : 0;
+    const upiShare = totalOrders > 0
+      ? Math.round(((stats.paymentMethods.upi || 0) / totalOrders) * 100)
+      : 0;
+
+    return { averageOrderValue, activeOrders, deliveredRate, paypalShare, upiShare };
+  }, [stats]);
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] w-full bg-slate-950">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500 border-r-4 border-r-transparent"></div>
-          <div className="absolute inset-0 m-auto h-8 w-8 rounded-full bg-indigo-500/20 animate-ping"></div>
+      <main className="flex-1 min-h-[calc(100vh-64px)] bg-slate-50 p-6">
+        <div className="mx-auto flex min-h-[60vh] max-w-6xl items-center justify-center">
+          <div className="rounded border border-slate-200 bg-white px-6 py-5 text-center shadow-sm">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-emerald-600" />
+            <p className="mt-3 text-sm font-semibold text-slate-600">Loading dashboard</p>
+          </div>
         </div>
-        <p className="text-slate-400 font-bold text-sm mt-6 tracking-widest animate-pulse uppercase">Initiating High-End Analytics HUD...</p>
-      </div>
+      </main>
     );
   }
 
-  // Chart setup
-  const salesData = stats.dailySalesTrend || [];
-  const maxSale = Math.max(...salesData.map((d) => d.sales), 100);
-  const chartHeight = 160;
-  const chartWidth = 500;
-  const padding = 25;
-
-  // SVG Coordinates setup
-  let points = "";
-  let areaPoints = "";
-  let forecastPoints = "";
-  if (salesData.length > 1) {
-    const stepX = (chartWidth - padding * 2) / (salesData.length - 1);
-    const scaleY = (chartHeight - padding * 2) / maxSale;
-
-    salesData.forEach((d, idx) => {
-      const x = padding + idx * stepX;
-      const y = chartHeight - padding - d.sales * scaleY;
-      if (idx === 0) {
-        points = `M ${x} ${y}`;
-        areaPoints = `M ${x} ${chartHeight - padding} L ${x} ${y}`;
-      } else {
-        points += ` L ${x} ${y}`;
-        areaPoints += ` L ${x} ${y}`;
-      }
-      if (idx === salesData.length - 1) {
-        areaPoints += ` L ${x} ${chartHeight - padding} Z`;
-        // Generate projected next day AI node
-        const projectedY = Math.max(y - 15, padding);
-        forecastPoints = `M ${x} ${y} L ${x + stepX / 2} ${projectedY}`;
-      }
-    });
-  }
-
-  const averageOrderValue = stats.totalOrders > 0 
-    ? (stats.totalSales / stats.totalOrders).toFixed(2) 
-    : "0.00";
-
-  const isDark = theme === "cyberpunk";
-
   return (
-    <div className={`w-full min-h-screen transition-colors duration-500 p-4 md:p-8 flex flex-col ${
-      isDark ? "bg-[#0b0f19] text-slate-100" : "bg-slate-50 text-slate-800"
-    }`}>
-      {/* Premium Dashboard Header */}
-      <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded ${
-              isDark ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "bg-indigo-100 text-indigo-700"
-            }`}>SYSTEM LIVE</span>
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-          </div>
-          <h1 className={`text-3xl font-black tracking-tight mt-1 ${
-            isDark ? "bg-gradient-to-r from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent" : "text-slate-900"
-          }`}>
-            Executive Operations HUD
-          </h1>
-          <p className="text-xs text-slate-400 font-medium mt-0.5">Real-time analytical interface & revenue projections pipeline</p>
-        </div>
+    <main className="flex-1 min-h-[calc(100vh-64px)] overflow-x-hidden bg-slate-50 px-4 py-6 md:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6">
+        <DashboardHeader
+          refreshing={refreshing}
+          lastUpdated={lastUpdated}
+          onRefresh={() => {
+            fetchAnalytics({ silent: true });
+            fetchEvents();
+          }}
+        />
 
-        {/* Switchers Controls */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Theme Selector */}
-          <div className={`p-1 rounded-xl flex items-center gap-1 border ${
-            isDark ? "bg-slate-900/60 border-slate-800" : "bg-white border-slate-200 shadow-xs"
-          }`}>
-            <button
-              onClick={() => setTheme("light")}
-              className={`px-3 py-1.5 rounded-lg text-[11px] font-extrabold flex items-center gap-1.5 transition ${
-                theme === "light" 
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              ☀️ Light
-            </button>
-            <button
-              onClick={() => setTheme("cyberpunk")}
-              className={`px-3 py-1.5 rounded-lg text-[11px] font-extrabold flex items-center gap-1.5 transition ${
-                theme === "cyberpunk"
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20"
-                  : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              🚀 Cyber Dark
-            </button>
-          </div>
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <MetricCard label="Revenue" value={currency.format(stats.totalSales || 0)} tone="emerald" caption="Paid, COD, and UPI orders" />
+          <MetricCard label="Orders" value={number.format(stats.totalOrders || 0)} tone="blue" caption={`${number.format(derived.activeOrders)} active right now`} />
+          <MetricCard label="Average Basket" value={currency.format(derived.averageOrderValue)} tone="amber" caption="Average order value" />
+          <MetricCard label="Delivery Rate" value={`${derived.deliveredRate}%`} tone="rose" caption={`${number.format(stats.statusCounts.delivered || 0)} delivered orders`} />
+        </section>
 
-          {/* Interactive Navigation tabs */}
-          <div className={`p-1 rounded-xl flex items-center gap-1 border ${
-            isDark ? "bg-slate-900/60 border-slate-800" : "bg-white border-slate-200 shadow-xs"
-          }`}>
-            <button
-              onClick={() => setActiveTab("overview")}
-              className={`px-4 py-1.5 rounded-lg text-[11px] font-extrabold transition ${
-                activeTab === "overview"
-                  ? isDark ? "bg-indigo-500 text-white shadow-md shadow-indigo-500/10" : "bg-slate-900 text-white shadow-md"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => setActiveTab("order-analysis")}
-              className={`px-4 py-1.5 rounded-lg text-[11px] font-extrabold transition ${
-                activeTab === "order-analysis"
-                  ? isDark ? "bg-indigo-500 text-white shadow-md shadow-indigo-500/10" : "bg-slate-900 text-white shadow-md"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Order Analysis
-            </button>
-          </div>
-        </div>
+        <section className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+          <RevenueChart salesData={stats.dailySalesTrend || []} />
+          <StatusPanel statusCounts={stats.statusCounts} totalOrders={stats.totalOrders} />
+        </section>
+
+        <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <CategoryPanel categories={stats.categoryBreakdown || []} />
+          <PaymentPanel paymentMethods={stats.paymentMethods} totalOrders={stats.totalOrders} paypalShare={derived.paypalShare} upiShare={derived.upiShare} />
+          <StockPanel products={stats.outOfStockProducts || []} />
+        </section>
+
+        <section className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.9fr)]">
+          <CouponPanel couponStats={stats.couponStats} />
+          <ActivityPanel events={events} />
+        </section>
       </div>
-
-      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
-        
-        {/* LEFT 3 COLUMNS: MAIN CONTENTS */}
-        <div className="lg:col-span-3 space-y-6">
-
-          {/* Glowing KPI Stats Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {/* Card 1: Total Revenue */}
-            <div className={`relative overflow-hidden rounded-2xl p-5 border transition-all duration-300 group hover:scale-[1.02] ${
-              isDark 
-                ? "bg-gradient-to-br from-indigo-950/80 to-[#121829] border-indigo-500/20 shadow-lg shadow-indigo-950/20 hover:border-indigo-500/40" 
-                : "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white border-transparent shadow-md"
-            }`}>
-
-              <p className={`text-[10px] font-black uppercase tracking-wider ${isDark ? "text-indigo-400" : "text-indigo-100"}`}>Gross Net Revenue</p>
-              <h2 className="text-4xl font-black tracking-tight mt-3">${stats.totalSales.toFixed(2)}</h2>
-              <div className="flex items-center gap-1.5 mt-4">
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-white/20 text-white"}`}>+14.2%</span>
-                <span className={`text-[9px] ${isDark ? "text-slate-400" : "text-indigo-100/80"}`}>Gross metrics synced</span>
-              </div>
-            </div>
-
-            {/* Card 2: Total Orders */}
-            <div className={`relative overflow-hidden rounded-2xl p-5 border transition-all duration-300 group hover:scale-[1.02] ${
-              isDark 
-                ? "bg-[#101626] border-slate-800/80 shadow-md hover:border-slate-700" 
-                : "bg-white border-slate-200 shadow-sm hover:shadow-md"
-            }`}>
-
-              <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Total Sales Volume</p>
-              <h2 className={`text-4xl font-black tracking-tight mt-3 ${isDark ? "text-white" : "text-slate-900"}`}>{stats.totalOrders}</h2>
-              <div className="flex items-center gap-1.5 mt-4">
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${isDark ? "bg-indigo-500/10 text-indigo-400" : "bg-indigo-50 text-indigo-700"}`}>100% SECURE</span>
-                <span className="text-[9px] text-slate-400">Order pipelines online</span>
-              </div>
-            </div>
-
-            {/* Card 3: Average Order Value */}
-            <div className={`relative overflow-hidden rounded-2xl p-5 border transition-all duration-300 group hover:scale-[1.02] ${
-              isDark 
-                ? "bg-[#101626] border-slate-800/80 shadow-md hover:border-slate-700" 
-                : "bg-white border-slate-200 shadow-sm hover:shadow-md"
-            }`}>
-
-              <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Average Basket Size</p>
-              <h2 className={`text-4xl font-black tracking-tight mt-3 ${isDark ? "text-white" : "text-slate-900"}`}>${averageOrderValue}</h2>
-              <div className="flex items-center gap-1.5 mt-4">
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-700"}`}>OPTIMAL</span>
-                <span className="text-[9px] text-slate-400">Yield efficiency rate</span>
-              </div>
-            </div>
-          </div>
-
-          {activeTab === "overview" ? (
-            <>
-              {/* Row 1: SVG Revenue Chart & Category Splits */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                {/* SVG Area Chart Card */}
-                <div className={`lg:col-span-2 rounded-2xl p-5 border space-y-4 ${
-                  isDark ? "bg-[#101626] border-slate-800/80" : "bg-white border-slate-200 shadow-sm"
-                }`}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-extrabold text-sm tracking-tight text-slate-400 uppercase">Revenue Pipeline Trend</h3>
-                      <p className={`text-lg font-black ${isDark ? "text-white" : "text-slate-900"}`}>Gross Daily Inflow</p>
-                    </div>
-                    {/* Predictive AI Badge */}
-                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                      isDark ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    }`}>
-                      📈 AI Forecast Included
-                    </span>
-                  </div>
-
-                  <div className={`w-full flex items-center justify-center p-3 rounded-xl ${
-                    isDark ? "bg-[#090d16]" : "bg-slate-50"
-                  }`}>
-                    <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-auto max-h-[220px] overflow-visible">
-                      <defs>
-                        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.35" />
-                          <stop offset="100%" stopColor="#6366f1" stopOpacity="0.00" />
-                        </linearGradient>
-                      </defs>
-
-                      {/* Chart Grid Lines */}
-                      <line x1={padding} y1={chartHeight - padding} x2={chartWidth - padding} y2={chartHeight - padding} stroke={isDark ? "#1e293b" : "#e2e8f0"} strokeWidth="1" />
-                      <line x1={padding} y1={padding} x2={chartWidth - padding} y2={padding} stroke={isDark ? "#1e293b" : "#f1f5f9"} strokeDasharray="3 3" />
-                      <line x1={padding} y1={chartHeight/2} x2={chartWidth - padding} y2={chartHeight/2} stroke={isDark ? "#1e293b" : "#f1f5f9"} strokeDasharray="3 3" />
-
-                      {/* Area Fill under Curve */}
-                      {salesData.length > 1 && <path d={areaPoints} fill="url(#areaGrad)" />}
-
-                      {/* Area Curve Outline */}
-                      {salesData.length > 1 && (
-                        <path d={points} fill="none" stroke="#6366f1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                      )}
-
-                      {/* Projected AI Line */}
-                      {salesData.length > 1 && (
-                        <path d={forecastPoints} fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="4 4" strokeLinecap="round" />
-                      )}
-
-                      {/* Dynamic Interactivity Nodes */}
-                      {salesData.map((d, idx) => {
-                        const stepX = (chartWidth - padding * 2) / (salesData.length - 1);
-                        const scaleY = (chartHeight - padding * 2) / maxSale;
-                        const x = padding + idx * stepX;
-                        const y = chartHeight - padding - d.sales * scaleY;
-
-                        return (
-                          <g key={idx} className="group/node cursor-pointer">
-                            <circle cx={x} cy={y} r="5" fill={isDark ? "#0b0f19" : "#ffffff"} stroke="#6366f1" strokeWidth="3" />
-                            
-                            {/* Hover HUD Panel details */}
-                            <rect x={x - 30} y={y - 28} width="60" height="20" rx="5" fill="#1e1b4b" className="opacity-0 group-hover/node:opacity-100 transition duration-150 shadow-lg" />
-                            <text x={x} y={y - 15} fill="#38bdf8" fontSize="9" fontWeight="black" textAnchor="middle" className="opacity-0 group-hover/node:opacity-100 transition duration-150">
-                              ${d.sales.toFixed(0)}
-                            </text>
-
-                            {/* X-Axis labels */}
-                            <text x={x} y={chartHeight - 6} fontSize="8" fontWeight="bold" fill="#64748b" textAnchor="middle">{d.date}</text>
-                          </g>
-                        );
-                      })}
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Categories Split */}
-                <div className={`rounded-2xl p-5 border flex flex-col space-y-4 ${
-                  isDark ? "bg-[#101626] border-slate-800/80" : "bg-white border-slate-200 shadow-sm"
-                }`}>
-                  <div>
-                    <h3 className="font-extrabold text-sm tracking-tight text-slate-400 uppercase">Sales Breakdown</h3>
-                    <p className={`text-lg font-black ${isDark ? "text-white" : "text-slate-900"}`}>Category Split</p>
-                  </div>
-
-                  <div className="flex-1 flex flex-col justify-center space-y-4">
-                    {stats.categoryBreakdown.length === 0 ? (
-                      <p className="text-slate-500 italic text-xs text-center py-6">No categoric sales recorded yet.</p>
-                    ) : (
-                      stats.categoryBreakdown.slice(0, 4).map((item, idx) => {
-                        const gradients = [
-                          "from-indigo-500 to-purple-500",
-                          "from-emerald-500 to-teal-500",
-                          "from-amber-500 to-orange-500",
-                          "from-rose-500 to-pink-500"
-                        ];
-                        const totalVal = stats.categoryBreakdown.reduce((sum, c) => sum + c.value, 0);
-                        const pct = totalVal > 0 ? ((item.value / totalVal) * 100).toFixed(0) : 0;
-
-                        return (
-                          <div key={idx} className="space-y-1.5">
-                            <div className="flex justify-between items-center text-xs font-bold">
-                              <span className={isDark ? "text-slate-300" : "text-slate-700"}>{item.name}</span>
-                              <span className="text-slate-400">{item.value} units ({pct}%)</span>
-                            </div>
-                            <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? "bg-slate-900" : "bg-slate-100"}`}>
-                              <div 
-                                className={`bg-gradient-to-r ${gradients[idx % gradients.length]} h-full rounded-full transition-all duration-700`}
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2: Funnels and Stock Alert items */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                {/* Fulfillment status list */}
-                <div className={`rounded-2xl p-5 border flex flex-col space-y-4 ${
-                  isDark ? "bg-[#101626] border-slate-800/80" : "bg-white border-slate-200 shadow-sm"
-                }`}>
-                  <div>
-                    <h3 className="font-extrabold text-sm tracking-tight text-slate-400 uppercase">Operational Status</h3>
-                    <p className={`text-lg font-black ${isDark ? "text-white" : "text-slate-900"}`}>Fulfillment Funnel</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 flex-1">
-                    <div className={`p-3 rounded-xl text-center border ${isDark ? "bg-[#090d16] border-slate-800" : "bg-slate-50 border-slate-100"}`}>
-                      <span className="text-2xl">📥</span>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">Placed</p>
-                      <h4 className={`text-xl font-black mt-0.5 ${isDark ? "text-white" : "text-slate-800"}`}>{stats.statusCounts.placed}</h4>
-                    </div>
-                    <div className={`p-3 rounded-xl text-center border ${isDark ? "bg-[#090d16] border-slate-800" : "bg-slate-50 border-slate-100"}`}>
-                      <span className="text-2xl">📦</span>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">Processing</p>
-                      <h4 className={`text-xl font-black mt-0.5 ${isDark ? "text-white" : "text-slate-800"}`}>{stats.statusCounts.packed + stats.statusCounts.shipped}</h4>
-                    </div>
-                    <div className={`p-3 rounded-xl text-center border ${isDark ? "bg-[#090d16] border-slate-800" : "bg-slate-50 border-slate-100"}`}>
-                      <span className="text-2xl">🛵</span>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">In Transit</p>
-                      <h4 className={`text-xl font-black mt-0.5 ${isDark ? "text-white" : "text-slate-800"}`}>{stats.statusCounts.outForDelivery}</h4>
-                    </div>
-                    <div className={`p-3 rounded-xl text-center border ${isDark ? "bg-emerald-500/5 border-emerald-500/10" : "bg-emerald-50 border-emerald-100"}`}>
-                      <span className="text-2xl">✅</span>
-                      <p className="text-[9px] text-emerald-600 font-bold uppercase mt-1">Delivered</p>
-                      <h4 className="text-xl font-black text-emerald-500 mt-0.5">{stats.statusCounts.delivered}</h4>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stock Warning List */}
-                <div className={`lg:col-span-2 rounded-2xl p-5 border space-y-4 ${
-                  isDark ? "bg-[#101626] border-slate-800/80" : "bg-white border-slate-200 shadow-sm"
-                }`}>
-                  <div>
-                    <h3 className="font-extrabold text-sm tracking-tight text-slate-400 uppercase">Inventory Health</h3>
-                    <p className={`text-lg font-black ${isDark ? "text-white" : "text-slate-900"}`}>Critical Restock Alerts</p>
-                  </div>
-
-                  <div className="divide-y divide-slate-800/60 max-h-[190px] overflow-y-auto pr-1">
-                    {stats.outOfStockProducts.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 text-center">
-                        <span className="text-3xl animate-bounce">🛡️</span>
-                        <p className="text-xs font-black text-slate-200 mt-2">All Products Healthy</p>
-                        <p className="text-[10px] text-slate-500">Inventory levels are currently within safe thresholds.</p>
-                      </div>
-                    ) : (
-                      stats.outOfStockProducts.map((p, idx) => (
-                        <div key={idx} className="flex justify-between items-center py-2.5 text-xs font-semibold">
-                          <div>
-                            <h4 className={`font-bold ${isDark ? "text-slate-200" : "text-slate-800"}`}>{p.name}</h4>
-                            <p className="text-[10px] text-slate-400 mt-0.5">{p.category}</p>
-                          </div>
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-                            isDark ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-red-50 text-red-600"
-                          }`}>
-                            CRITICAL RESTOCK
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            /* ORDER ANALYSIS TAB CONTENT */
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Payment split channels */}
-                <div className={`rounded-2xl p-5 border flex flex-col justify-between space-y-6 ${
-                  isDark ? "bg-[#101626] border-slate-800/80" : "bg-white border-slate-200 shadow-sm"
-                }`}>
-                  <div>
-                    <h3 className="font-extrabold text-sm tracking-tight text-slate-400 uppercase">Payment Splits</h3>
-                    <p className={`text-lg font-black ${isDark ? "text-white" : "text-slate-900"}`}>Transactional Channels</p>
-                  </div>
-
-                  <div className="flex-1 flex flex-col justify-center space-y-5 py-4">
-                    {stats.totalOrders === 0 ? (
-                      <p className="text-slate-500 italic text-xs text-center">No transactions registered.</p>
-                    ) : (
-                      <>
-                        {/* PayPal Channel bar */}
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-xs font-bold">
-                            <span className="text-blue-500 flex items-center gap-1.5">
-                              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
-                              PayPal Secure Checkout
-                            </span>
-                            <span>{stats.paymentMethods.paypal} ({((stats.paymentMethods.paypal / stats.totalOrders)*100).toFixed(0)}%)</span>
-                          </div>
-                          <div className={`w-full h-3 rounded-full overflow-hidden ${isDark ? "bg-slate-900" : "bg-slate-100"}`}>
-                            <div 
-                              className="bg-gradient-to-r from-blue-600 to-indigo-500 h-full rounded-full transition-all duration-700" 
-                              style={{ width: `${((stats.paymentMethods.paypal / stats.totalOrders)*100)}%` }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* COD Channel bar */}
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-xs font-bold">
-                            <span className="text-emerald-500 flex items-center gap-1.5">
-                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                              Cash On Delivery (COD)
-                            </span>
-                            <span>{stats.paymentMethods.cod} ({((stats.paymentMethods.cod / stats.totalOrders)*100).toFixed(0)}%)</span>
-                          </div>
-                          <div className={`w-full h-3 rounded-full overflow-hidden ${isDark ? "bg-slate-900" : "bg-slate-100"}`}>
-                            <div 
-                              className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-700" 
-                              style={{ width: `${((stats.paymentMethods.cod / stats.totalOrders)*100)}%` }}
-                            />
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  <div className={`p-4 rounded-xl border flex items-center gap-3 ${
-                    isDark ? "bg-[#090d16] border-slate-800" : "bg-slate-50 border-slate-100"
-                  }`}>
-                    <span className="text-2xl">💡</span>
-                    <p className="text-[10px] text-slate-400 leading-relaxed font-semibold">
-                      Online transaction rates have risen. Direct deposit payouts minimize manual reconciliation costs.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Basket Spread */}
-                <div className={`rounded-2xl p-5 border space-y-4 ${
-                  isDark ? "bg-[#101626] border-slate-800/80" : "bg-white border-slate-200 shadow-sm"
-                }`}>
-                  <div>
-                    <h3 className="font-extrabold text-sm tracking-tight text-slate-400 uppercase">Customer Value Spread</h3>
-                    <p className={`text-lg font-black ${isDark ? "text-white" : "text-slate-900"}`}>Basket Sizes Distribution</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    {[
-                      { label: "Under $50", count: stats.orderValueDistribution.under50, gradient: "from-rose-500 to-orange-400" },
-                      { label: "$50 - $100", count: stats.orderValueDistribution.fiftyTo100, gradient: "from-amber-500 to-yellow-400" },
-                      { label: "$100 - $200", count: stats.orderValueDistribution.hundredTo200, gradient: "from-indigo-500 to-purple-400" },
-                      { label: "$200+", count: stats.orderValueDistribution.over200, gradient: "from-emerald-500 to-teal-400" }
-                    ].map((item, idx) => {
-                      const pct = stats.totalOrders > 0 ? ((item.count / stats.totalOrders) * 100).toFixed(0) : 0;
-                      return (
-                        <div key={idx} className="space-y-1">
-                          <div className="flex justify-between items-center text-xs font-bold">
-                            <span>{item.label}</span>
-                            <span className="text-slate-400">{item.count} checkouts ({pct}%)</span>
-                          </div>
-                          <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? "bg-slate-900" : "bg-slate-100"}`}>
-                            <div 
-                              className={`bg-gradient-to-r ${item.gradient} h-full rounded-full transition-all duration-700`}
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Coupon Analytics table view */}
-              <div className={`rounded-2xl p-5 border space-y-4 ${
-                isDark ? "bg-[#101626] border-slate-800/80" : "bg-white border-slate-200 shadow-sm"
-              }`}>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                  <div>
-                    <h3 className="font-extrabold text-sm tracking-tight text-slate-400 uppercase">Discount Operations</h3>
-                    <p className={`text-lg font-black ${isDark ? "text-white" : "text-slate-900"}`}>Coupon Usage & Performance</p>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="text-left">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">Total Discounted Value</span>
-                      <h4 className="text-xl font-black text-rose-500">${stats.couponStats.totalDiscount.toFixed(2)}</h4>
-                    </div>
-                    <div className="text-left border-l pl-4 border-slate-800">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">Redeemed Frequency</span>
-                      <h4 className={`text-xl font-black ${isDark ? "text-white" : "text-slate-800"}`}>{stats.couponStats.usageCount} times</h4>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-semibold">
-                    <thead>
-                      <tr className="border-b border-slate-800 text-[10px] uppercase text-slate-400">
-                        <th className="py-3 font-extrabold">Promo Code</th>
-                        <th className="py-3 font-extrabold">Redemptions</th>
-                        <th className="py-3 font-extrabold">Discount Level</th>
-                        <th className="py-3 font-extrabold text-right">Applicability</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/40">
-                      {stats.couponStats.codes.length === 0 ? (
-                        <tr>
-                          <td colSpan="4" className="py-6 text-center text-slate-500 italic">No coupon redemptions recorded yet.</td>
-                        </tr>
-                      ) : (
-                        stats.couponStats.codes.map((item, idx) => {
-                          let rate = "10%";
-                          let thres = "$100 spend";
-                          if (item.code === "SILVER20") { rate = "20%"; thres = "$250 spend"; }
-                          else if (item.code === "GOLD30") { rate = "30%"; thres = "$500 spend"; }
-
-                          return (
-                            <tr key={idx} className="hover:bg-slate-900/30">
-                              <td className="py-3">
-                                <span className={`px-2 py-1 border rounded-md font-mono text-[10px] font-black ${
-                                  isDark ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400" : "bg-indigo-50 border-indigo-100 text-indigo-700"
-                                }`}>
-                                  {item.code}
-                                </span>
-                              </td>
-                              <td className="py-3">{item.count} checkouts</td>
-                              <td className="py-3 text-emerald-500 font-black">{rate} OFF</td>
-                              <td className="py-3 text-right text-slate-400 font-medium">Above {thres}</td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT 1 COLUMN: DYNAMIC REAL-TIME HUD FEED */}
-        <div className="space-y-6">
-          {/* Active Logs Tickers */}
-          <div className={`rounded-2xl p-5 border space-y-4 ${
-            isDark ? "bg-[#101626] border-slate-800/80" : "bg-white border-slate-200 shadow-sm"
-          }`}>
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-extrabold text-xs tracking-tight text-slate-400 uppercase">Live Pipeline</h3>
-                <p className={`text-sm font-black ${isDark ? "text-white" : "text-slate-900"}`}>System Event Logs</p>
-              </div>
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-            </div>
-
-            <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1">
-              {realtimeTicks.map((tick) => (
-                <div key={tick.id} className="text-[11px] space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className={`text-[8px] px-1 py-0.2 rounded font-black tracking-wider ${
-                      tick.badge === "SUCCESS" 
-                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25" 
-                        : tick.badge === "WARNING"
-                          ? "bg-amber-500/15 text-amber-400 border border-amber-500/25"
-                          : "bg-blue-500/15 text-blue-400 border border-blue-500/25"
-                    }`}>
-                      {tick.badge}
-                    </span>
-                    <span className="text-[8px] text-slate-500 font-bold">{tick.time}</span>
-                  </div>
-                  <p className={`font-semibold leading-relaxed ${isDark ? "text-slate-300" : "text-slate-700"}`}>{tick.message}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-
-
-      </div>
-    </div>
+    </main>
   );
 };
+
+const DashboardHeader = ({ refreshing, lastUpdated, onRefresh }) => (
+  <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div>
+      <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Admin Dashboard</p>
+      <h1 className="mt-1 text-2xl font-black text-slate-950 md:text-3xl">Store Operations</h1>
+      <p className="mt-1 text-sm text-slate-500">
+        Track revenue, fulfillment, inventory pressure, and recent order activity.
+      </p>
+    </div>
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="rounded border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500">
+        Updated {lastUpdated ? lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "now"}
+      </span>
+      <button
+        type="button"
+        onClick={onRefresh}
+        disabled={refreshing}
+        className="rounded bg-slate-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {refreshing ? "Refreshing" : "Refresh"}
+      </button>
+    </div>
+  </header>
+);
+
+const MetricCard = ({ label, value, caption, tone }) => {
+  const toneMap = {
+    emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    blue: "border-blue-200 bg-blue-50 text-blue-700",
+    amber: "border-amber-200 bg-amber-50 text-amber-700",
+    rose: "border-rose-200 bg-rose-50 text-rose-700",
+  };
+
+  return (
+    <article className="rounded border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p>
+        <span className={`h-2.5 w-2.5 rounded-full border ${toneMap[tone]}`} />
+      </div>
+      <p className="mt-4 text-3xl font-black tracking-tight text-slate-950">{value}</p>
+      <p className="mt-2 text-xs font-medium text-slate-500">{caption}</p>
+    </article>
+  );
+};
+
+const RevenueChart = ({ salesData }) => {
+  const width = 720;
+  const height = 260;
+  const padding = 34;
+  const maxSale = Math.max(...salesData.map((item) => item.sales || 0), 1);
+  const hasData = salesData.some((item) => item.sales > 0);
+
+  const points = salesData.map((item, index) => {
+    const x = salesData.length > 1
+      ? padding + index * ((width - padding * 2) / (salesData.length - 1))
+      : width / 2;
+    const y = height - padding - ((item.sales || 0) / maxSale) * (height - padding * 2);
+    return { ...item, x, y };
+  });
+
+  const path = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
+  const areaPath = points.length > 0
+    ? `${path} L ${points.at(-1).x} ${height - padding} L ${points[0].x} ${height - padding} Z`
+    : "";
+
+  return (
+    <article className="rounded border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="text-base font-black text-slate-950">Revenue Trend</h2>
+          <p className="text-sm text-slate-500">Last 7 days of order value</p>
+        </div>
+        <span className="w-fit rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">
+          Live sales
+        </span>
+      </div>
+
+      <div className="mt-5 rounded bg-slate-50 p-3">
+        {hasData ? (
+          <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full">
+            <defs>
+              <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity="0.28" />
+                <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {[0, 1, 2].map((line) => {
+              const y = padding + line * ((height - padding * 2) / 2);
+              return <line key={line} x1={padding} x2={width - padding} y1={y} y2={y} stroke="#e2e8f0" strokeDasharray="4 4" />;
+            })}
+            <path d={areaPath} fill="url(#revenueFill)" />
+            <path d={path} fill="none" stroke="#059669" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            {points.map((point) => (
+              <g key={point.date}>
+                <circle cx={point.x} cy={point.y} r="5" fill="#ffffff" stroke="#059669" strokeWidth="3" />
+                <text x={point.x} y={height - 8} textAnchor="middle" fontSize="12" fontWeight="700" fill="#64748b">
+                  {point.date}
+                </text>
+              </g>
+            ))}
+          </svg>
+        ) : (
+          <EmptyState title="No revenue yet" text="Orders will appear here as soon as sales are recorded." />
+        )}
+      </div>
+    </article>
+  );
+};
+
+const StatusPanel = ({ statusCounts, totalOrders }) => {
+  const rows = [
+    { label: "Placed", value: statusCounts.placed || 0, color: "bg-blue-600" },
+    { label: "Packed", value: statusCounts.packed || 0, color: "bg-amber-500" },
+    { label: "Shipped", value: statusCounts.shipped || 0, color: "bg-indigo-600" },
+    { label: "Out for Delivery", value: statusCounts.outForDelivery || 0, color: "bg-orange-500" },
+    { label: "Delivered", value: statusCounts.delivered || 0, color: "bg-emerald-600" },
+  ];
+
+  return (
+    <article className="rounded border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="text-base font-black text-slate-950">Fulfillment Flow</h2>
+      <p className="text-sm text-slate-500">Order movement by current status</p>
+      <div className="mt-5 space-y-4">
+        {rows.map((row) => {
+          const pct = totalOrders > 0 ? Math.round((row.value / totalOrders) * 100) : 0;
+          return (
+            <div key={row.label}>
+              <div className="mb-1 flex items-center justify-between text-sm">
+                <span className="font-bold text-slate-700">{row.label}</span>
+                <span className="font-semibold text-slate-500">{number.format(row.value)} ({pct}%)</span>
+              </div>
+              <div className="h-2 rounded bg-slate-100">
+                <div className={`h-2 rounded ${row.color}`} style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </article>
+  );
+};
+
+const CategoryPanel = ({ categories }) => {
+  const total = categories.reduce((sum, item) => sum + (item.value || 0), 0);
+
+  return (
+    <Panel title="Top Categories" subtitle="Units sold by department">
+      {categories.length === 0 ? (
+        <EmptyState title="No category sales" text="Category mix will update after orders are placed." />
+      ) : (
+        <div className="space-y-3">
+          {categories.slice(0, 5).map((item) => {
+            const pct = total > 0 ? Math.round(((item.value || 0) / total) * 100) : 0;
+            return (
+              <div key={item.name} className="rounded border border-slate-100 bg-slate-50 p-3">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="font-bold text-slate-800">{item.name}</span>
+                  <span className="font-semibold text-slate-500">{number.format(item.value || 0)} units</span>
+                </div>
+                <div className="mt-2 h-2 rounded bg-white">
+                  <div className="h-2 rounded bg-emerald-600" style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Panel>
+  );
+};
+
+const PaymentPanel = ({ paymentMethods, totalOrders, paypalShare, upiShare }) => {
+  const codShare = totalOrders > 0 ? Math.max(0, 100 - paypalShare - upiShare) : 0;
+
+  return (
+    <Panel title="Payment Mix" subtitle="Checkout method adoption">
+      <div className="grid grid-cols-3 gap-3">
+        <MiniStat label="PayPal" value={number.format(paymentMethods.paypal || 0)} caption={`${paypalShare}% share`} />
+        <MiniStat label="UPI" value={number.format(paymentMethods.upi || 0)} caption={`${upiShare}% share`} />
+        <MiniStat label="COD" value={number.format(paymentMethods.cod || 0)} caption={`${codShare}% share`} />
+      </div>
+      <div className="mt-4 flex h-3 overflow-hidden rounded bg-slate-100">
+        <div className="h-3 bg-blue-600" style={{ width: `${paypalShare}%` }} />
+        <div className="h-3 bg-emerald-600" style={{ width: `${upiShare}%` }} />
+      </div>
+      <p className="mt-3 text-xs font-medium text-slate-500">
+        Use this split to plan cash handling and payment follow-up.
+      </p>
+    </Panel>
+  );
+};
+
+const StockPanel = ({ products }) => (
+  <Panel title="Restock Watch" subtitle="Out-of-stock products">
+    {products.length === 0 ? (
+      <EmptyState title="Inventory healthy" text="No out-of-stock products were reported." />
+    ) : (
+      <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
+        {products.map((product) => (
+          <div key={product._id || product.name} className="flex items-center justify-between gap-3 rounded border border-rose-100 bg-rose-50 px-3 py-2">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-slate-900">{product.name}</p>
+              <p className="text-xs font-medium text-slate-500">{product.category}</p>
+            </div>
+            <span className="shrink-0 rounded bg-white px-2 py-1 text-xs font-bold text-rose-700">Restock</span>
+          </div>
+        ))}
+      </div>
+    )}
+  </Panel>
+);
+
+const CouponPanel = ({ couponStats }) => (
+  <article className="rounded border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <h2 className="text-base font-black text-slate-950">Coupon Performance</h2>
+        <p className="text-sm text-slate-500">Discount usage and redemption frequency</p>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <MiniStat label="Uses" value={number.format(couponStats.usageCount || 0)} caption="redemptions" />
+        <MiniStat label="Discount" value={currency.format(couponStats.totalDiscount || 0)} caption="given" />
+      </div>
+    </div>
+
+    <div className="mt-5 overflow-x-auto">
+      <table className="w-full min-w-[460px] text-left text-sm">
+        <thead>
+          <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
+            <th className="py-3 font-black">Code</th>
+            <th className="py-3 font-black">Redemptions</th>
+            <th className="py-3 font-black text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {(couponStats.codes || []).length === 0 ? (
+            <tr>
+              <td colSpan="3" className="py-8">
+                <EmptyState title="No coupons used" text="Coupon data appears once shoppers redeem a code." />
+              </td>
+            </tr>
+          ) : (
+            couponStats.codes.map((item) => (
+              <tr key={item.code}>
+                <td className="py-3">
+                  <span className="rounded border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs font-black text-slate-800">
+                    {item.code}
+                  </span>
+                </td>
+                <td className="py-3 font-semibold text-slate-700">{number.format(item.count || 0)}</td>
+                <td className="py-3 text-right text-xs font-bold text-slate-500">Monitor margin</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  </article>
+);
+
+const ActivityPanel = ({ events }) => (
+  <Panel title="Recent Activity" subtitle="Latest order and payment events">
+    {events.length === 0 ? (
+      <EmptyState title="No recent events" text="Activity will appear after order updates." />
+    ) : (
+      <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+        {events.map((event) => (
+          <div key={event.id} className="rounded border border-slate-100 bg-slate-50 p-3">
+            <div className="mb-1 flex items-center justify-between gap-3">
+              <span className="rounded bg-white px-2 py-0.5 text-[10px] font-black uppercase text-slate-600">
+                {event.badge}
+              </span>
+              <span className="text-xs font-semibold text-slate-400">{event.time}</span>
+            </div>
+            <p className="text-sm font-semibold leading-relaxed text-slate-700">{event.message}</p>
+          </div>
+        ))}
+      </div>
+    )}
+  </Panel>
+);
+
+const Panel = ({ title, subtitle, children }) => (
+  <article className="rounded border border-slate-200 bg-white p-5 shadow-sm">
+    <h2 className="text-base font-black text-slate-950">{title}</h2>
+    <p className="mb-5 text-sm text-slate-500">{subtitle}</p>
+    {children}
+  </article>
+);
+
+const MiniStat = ({ label, value, caption }) => (
+  <div className="rounded border border-slate-200 bg-slate-50 px-3 py-2">
+    <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">{label}</p>
+    <p className="mt-1 text-lg font-black text-slate-950">{value}</p>
+    <p className="text-xs font-medium text-slate-500">{caption}</p>
+  </div>
+);
+
+const EmptyState = ({ title, text }) => (
+  <div className="flex min-h-28 flex-col items-center justify-center rounded border border-dashed border-slate-200 bg-white px-4 py-6 text-center">
+    <p className="text-sm font-black text-slate-700">{title}</p>
+    <p className="mt-1 max-w-xs text-xs font-medium text-slate-500">{text}</p>
+  </div>
+);
 
 export default Analytics;

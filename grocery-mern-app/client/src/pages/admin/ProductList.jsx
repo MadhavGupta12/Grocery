@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import { useAppContext } from "../../context/AppContext";
 import { getImageUrl } from "../../utils/getImageUrl";
+import { buildProductImageUrl, buildProductPlaceholderImage } from "../../utils/productImages";
 
 const ProductList = () => {
   const { products, fetchProducts, axios } = useAppContext();
@@ -43,6 +44,19 @@ const ProductList = () => {
                         src={getImageUrl(product.image?.[0])}
                         alt="Product"
                         className="w-16"
+                        onError={(e) => {
+                          const step = e.currentTarget.dataset.fallbackStep || "0";
+                          const fallback = buildProductImageUrl(product.name, product.category);
+                          if (step === "0") {
+                            e.currentTarget.dataset.fallbackStep = "1";
+                            e.currentTarget.src = e.currentTarget.src.includes("tse1.mm.bing.net")
+                              ? buildProductPlaceholderImage(product.name, product.category)
+                              : fallback;
+                          } else if (step === "1") {
+                            e.currentTarget.dataset.fallbackStep = "2";
+                            e.currentTarget.src = buildProductPlaceholderImage(product.name, product.category);
+                          }
+                        }}
                       />
                     </div>
                     <span className="truncate max-sm:hidden w-full">
