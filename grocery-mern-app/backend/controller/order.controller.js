@@ -89,13 +89,81 @@ export const placeOrderCOD = async (req, res) => {
   }
 };
 
+// Place order UPI: /api/order/upi
+export const placeOrderUPI = async (req, res) => {
+  try {
+    const userId = req.user;
+    const { items, address, couponCode, upiTransactionId } = req.body;
+
+    if (!address || !items || items.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Invalid order details", success: false });
+    }
+
+    if (!upiTransactionId || String(upiTransactionId).trim().length < 6) {
+      return res.status(400).json({
+        message: "Please enter a valid UPI transaction/reference ID",
+        success: false,
+      });
+    }
+
+    let amount = 0;
+    for (const item of items) {
+      const product = await Product.findById(item.product);
+      if (!product) {
+        return res.status(404).json({ success: false, message: `Product ${item.product} not found` });
+      }
+      amount += product.offerPrice * item.quantity;
+    }
+
+    let discountPct = 0;
+    if (couponCode) {
+      const deliveredOrders = await Order.find({ userId, status: "Delivered" });
+      const totalSpending = deliveredOrders.reduce((sum, order) => sum + order.amount, 0);
+      if (couponCode === "BRONZE10" && totalSpending >= 100) discountPct = 10;
+      else if (couponCode === "SILVER20" && totalSpending >= 250) discountPct = 20;
+      else if (couponCode === "GOLD30" && totalSpending >= 500) discountPct = 30;
+    }
+
+    let discountAmount = 0;
+    if (discountPct > 0) {
+      discountAmount = Math.floor(((amount * discountPct) / 100) * 100) / 100;
+      amount -= discountAmount;
+    }
+
+    amount += Math.floor((amount * 2) / 100);
+
+    await Order.create({
+      userId,
+      items,
+      address,
+      amount,
+      paymentType: "UPI",
+      isPaid: false,
+      paymentStatus: "pending_verification",
+      upiTransactionId: String(upiTransactionId).trim(),
+      couponCode: discountPct > 0 ? couponCode : undefined,
+      discount: discountAmount,
+    });
+
+    res.status(201).json({
+      message: "UPI order placed. Payment will be verified by admin.",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error in placeOrderUPI:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 // oredr details for individual user :/api/order/user
 export const getUserOrders = async (req, res) => {
   try {
     const userId = req.user;
     const orders = await Order.find({
       userId,
-      $or: [{ paymentType: "COD" }, { isPaid: true }],
+      $or: [{ paymentType: "COD" }, { paymentType: "UPI" }, { isPaid: true }],
     })
       .populate("items.product address")
       .sort({ createdAt: -1 });
@@ -109,7 +177,7 @@ export const getUserOrders = async (req, res) => {
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({
-      $or: [{ paymentType: "COD" }, { isPaid: true }],
+      $or: [{ paymentType: "COD" }, { paymentType: "UPI" }, { isPaid: true }],
     })
       .populate("items.product address")
       .sort({ createdAt: -1 });

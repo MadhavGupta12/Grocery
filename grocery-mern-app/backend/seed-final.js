@@ -5,12 +5,7 @@ import { connectDB } from "./config/connectDB.js";
 
 dotenv.config();
 
-// Use LoremFlickr - generates real images based on keywords
-const getProductImage = (productName) => {
-  const keywords = productName.split(" ")[0].toLowerCase(); // Get first word (product type)
-  const timestamp = Math.random() * 10000;
-  return `https://loremflickr.com/400/300/${keywords}?random=${timestamp}`;
-};
+import { buildProductImages } from "./services/productImages.js";
 
 const baseProducts = [
   // Vegetables (17 items)
@@ -165,7 +160,7 @@ const dummyProducts = baseProducts.map((p, index) => {
       `Stored under temperature-controlled delivery environment`
     ],
     category: p.category,
-    image: [getProductImage(p.name)],
+    image: buildProductImages(p.name, p.category),
     inStock: index % 20 !== 0,
     reviews: reviews,
   };

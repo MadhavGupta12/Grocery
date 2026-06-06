@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
 export const authAdmin = async (req, res, next) => {
   let adminToken = req.cookies.adminToken;
   if (!adminToken && req.headers.authorization) {
@@ -12,11 +13,13 @@ export const authAdmin = async (req, res, next) => {
   }
   try {
     const decoded = jwt.verify(adminToken, process.env.JWT_SECRET);
-    const adminEmail = process.env.ADMIN_EMAIL || process.env.SELLER_EMAIL || "admin@gmail.com";
-    if (decoded.email === adminEmail) {
+    const user = await User.findById(decoded.id);
+
+    if (user && user.role === "admin") {
+      req.admin = user;
       return next();
     } else {
-      return res.status(403).json({ message: "Forbidden", success: false });
+      return res.status(403).json({ message: "Forbidden. Admin access required.", success: false });
     }
   } catch (error) {
     console.error("Error in authAdmin middleware:", error);

@@ -1,26 +1,26 @@
 import Product from "../models/product.model.js";
 import User from "../models/user.model.js";
+import { buildProductImages } from "../services/productImages.js";
 
 // add product :/api/product/add
 export const addProduct = async (req, res) => {
   try {
     const { name, price, offerPrice, description, category } = req.body;
-    // const image = req.files?.map((file) => `/uploads/${file.filename}`);
-    const image = req.files?.map((file) => file.filename);
     if (
       !name ||
       !price ||
       !offerPrice ||
       !description ||
-      !category ||
-      !image ||
-      image.length === 0
+      !category
     ) {
       return res.status(400).json({
         success: false,
-        message: "All fields including images are required",
+        message: "All product fields are required",
       });
     }
+
+    const uploadedImages = req.files?.map((file) => file.filename).filter(Boolean) || [];
+    const image = uploadedImages.length > 0 ? uploadedImages : buildProductImages(name, category);
 
     const product = new Product({
       name,

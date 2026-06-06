@@ -1,31 +1,44 @@
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import User from "../models/user.model.js";
+
 // admin login :/api/admin/login
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const adminEmail = process.env.ADMIN_EMAIL || process.env.SELLER_EMAIL || "admin@gmail.com";
-    const adminPassword = process.env.ADMIN_PASSWORD || process.env.SELLER_PASSWORD || "admin123";
-    if (
-      password === adminPassword &&
-      email === adminEmail
-    ) {
-      const token = jwt.sign({ email }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      res.cookie("adminToken", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      return res
-        .status(200)
-        .json({ message: "Login successful", success: true, token });
-    } else {
-      return res
-        .status(400)
-        .json({ message: "Invalid credentials", success: false });
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: "Please fill all the fields", success: false });
     }
+
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials", success: false });
+    }
+
+    if (user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Not an admin.", success: false });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials", success: false });
+    }
+
+    const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.cookie("adminToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    
+    return res.status(200).json({ message: "Login successful", success: true, token });
   } catch (error) {
     console.error("Error in adminLogin:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -68,7 +81,7 @@ import Product from "../models/product.model.js";
 export const getAnalytics = async (req, res) => {
   try {
     const orders = await Order.find({
-      $or: [{ paymentType: "COD" }, { isPaid: true }],
+      $or: [{ paymentType: "COD" }, { paymentType: "UPI" }, { isPaid: true }],
     }).populate({
       path: "items.product",
       model: "Product",
@@ -88,7 +101,7 @@ export const getAnalytics = async (req, res) => {
     const dailySalesMap = {};
 
     // Advanced Order Analysis Metrics
-    const paymentMethods = { cod: 0, paypal: 0 };
+    const paymentMethods = { cod: 0, paypal: 0, upi: 0 };
     const couponStats = {
       usageCount: 0,
       totalDiscount: 0,
@@ -116,6 +129,8 @@ export const getAnalytics = async (req, res) => {
       const pType = (order.paymentType || "").toLowerCase();
       if (pType.includes("paypal")) {
         paymentMethods.paypal++;
+      } else if (pType.includes("upi")) {
+        paymentMethods.upi++;
       } else {
         paymentMethods.cod++;
       }

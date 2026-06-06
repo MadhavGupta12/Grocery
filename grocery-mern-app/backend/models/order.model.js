@@ -15,9 +15,17 @@ const orderSchema = new mongoose.Schema(
     isPaid: { type: Boolean, required: true, default: false },
     paymentStatus: { type: String, default: "pending" },
     paypalOrderId: { type: String },
+    upiTransactionId: { type: String },
     couponCode: { type: String },
     discount: { type: Number, default: 0 },
     rider: { type: String, default: "" },
+    statusHistory: [
+      {
+        status: { type: String, required: true },
+        date: { type: Date, default: Date.now }
+      }
+    ],
+    estimatedDeliveryTime: { type: Date }
   },
   { timestamps: true }
 );

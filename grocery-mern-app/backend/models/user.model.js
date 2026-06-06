@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
     },
     cartItems: { type: Object, default: {} },
     wishlist: { type: [String], default: [] },
+    role: { type: String, enum: ["user", "admin"], default: "user" },
   },
   { minimize: false }
 );
