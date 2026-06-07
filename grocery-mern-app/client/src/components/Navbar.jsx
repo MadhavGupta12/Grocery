@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 
 const Navbar = () => {
   const {
-    user, setUser, setShowUserLogin, navigate,
+    user, setShowUserLogin, navigate, clearUserSession,
     searchQuery, setSearchQuery,
     cartCount, totalCartAmount, axios, wishlistIds,
   } = useAppContext();
@@ -17,16 +17,18 @@ const Navbar = () => {
     try {
       const { data } = await axios.get("/api/user/logout");
       if (data.success) {
-        localStorage.removeItem("mapta_user_token");
+        clearUserSession();
         delete axios.defaults.headers.common["Authorization"];
-        setUser(null);
         navigate("/");
         toast.success(data.message);
       } else {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message);
+      clearUserSession();
+      delete axios.defaults.headers.common["Authorization"];
+      navigate("/");
+      toast.error(error.response?.data?.message || error.message);
     }
   };
 
@@ -59,14 +61,14 @@ const Navbar = () => {
     <header className={`sticky top-0 z-50 bg-white border-b border-gray-100 transition-all duration-300 ${scrolled ? "shadow-md" : "shadow-sm"}`}>
 
       {/* Top Promo Bar - Unified Hybrid Gradient */}
-      <div className="brand-gradient-bg text-[#1a1a1a] text-center py-2 text-xs font-black tracking-wide flex items-center justify-center gap-2">
-        <span className="animate-bounce-slow">⚡</span>
+      <div className="brand-gradient-bg text-[#1a1a1a] text-center px-3 py-2 text-[11px] sm:text-xs font-black tracking-wide flex items-center justify-center gap-2">
+        <span className="hidden sm:inline animate-bounce-slow">⚡</span>
         Delivery in 10 minutes — Fresh groceries, superfast delivery
-        <span className="animate-bounce-slow">⚡</span>
+        <span className="hidden sm:inline animate-bounce-slow">⚡</span>
       </div>
 
       {/* Main Navbar */}
-      <div className="px-4 py-3 md:px-10 lg:px-16 flex items-center gap-4">
+      <div className="px-4 py-3 md:px-10 lg:px-16 flex items-center gap-3 sm:gap-4">
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-1 shrink-0 hover:opacity-90 transition-opacity">
@@ -94,7 +96,7 @@ const Navbar = () => {
         </div>
 
         {/* Search */}
-        <div className="flex-1 max-w-2xl relative">
+        <div className="hidden sm:block flex-1 max-w-2xl relative">
           <div className="relative group">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#FC8019] transition-colors">
               <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
@@ -118,7 +120,7 @@ const Navbar = () => {
         </div>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
 
           {/* Admin */}
           <Link to="/admin" className="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-[#1a1a1a] px-3 py-2 rounded-lg hover:bg-gray-50 transition-all">
@@ -161,7 +163,7 @@ const Navbar = () => {
           ) : (
             <button
               onClick={() => setShowUserLogin(true)}
-              className="cursor-pointer px-4 py-2 text-sm text-[#1a1a1a] font-bold hover:bg-gray-50 rounded-xl transition-all border border-gray-200 hover:border-gray-300"
+              className="cursor-pointer px-3 sm:px-4 py-2 text-sm text-[#1a1a1a] font-bold hover:bg-gray-50 rounded-xl transition-all border border-gray-200 hover:border-gray-300"
             >
               Login
             </button>
@@ -170,7 +172,7 @@ const Navbar = () => {
           {/* Cart Button */}
           <button
             onClick={() => navigate("/cart")}
-            className="text-white px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm hover:shadow-md transition-all duration-200 font-bold text-sm cursor-pointer active:scale-95 bg-[#0c831f] hover:bg-[#0a7019]"
+            className="text-white px-3 sm:px-4 py-2.5 rounded-xl flex items-center gap-1.5 sm:gap-2 shadow-sm hover:shadow-md transition-all duration-200 font-bold text-sm cursor-pointer active:scale-95 bg-[#0c831f] hover:bg-[#0a7019]"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M3 3H5L5.4 5M5.4 5H21L19 13H7M5.4 5L7 13M7 13L4.7 17.6C4.5 18 4.8 18.5 5.3 18.5H19M9 21.5C9.6 21.5 10 21.1 10 20.5C10 19.9 9.6 19.5 9 19.5C8.4 19.5 8 19.9 8 20.5C8 21.1 8.4 21.5 9 21.5ZM17 21.5C17.6 21.5 18 21.1 18 20.5C18 19.9 17.6 19.5 17 19.5C16.4 19.5 16 19.9 16 20.5C16 21.1 16.4 21.5 17 21.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

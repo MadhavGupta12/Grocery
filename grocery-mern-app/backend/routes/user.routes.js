@@ -14,7 +14,7 @@ const router = express.Router();
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/is-auth", authUser, checkAuth);
-router.get("/logout", authUser, logout);
+router.get("/logout", logout);
 router.get("/coupons", authUser, getUserCoupons);
 router.post("/wishlist/toggle", authUser, toggleWishlist);
 router.get("/wishlist", authUser, getWishlist);

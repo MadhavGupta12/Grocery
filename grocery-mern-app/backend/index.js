@@ -22,6 +22,7 @@ import productRoutes from "./routes/product.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
 import addressRoutes from "./routes/address.routes.js";
 import orderRoutes from "./routes/order.routes.js";
+import { authAdmin } from "./middlewares/authAdmin.js";
 
 import { connectCloudinary } from "./config/cloudinary.js";
 import { autoProgressOrders } from "./services/orderAutomation.js";
@@ -72,7 +73,7 @@ app.use("/api/address", addressRoutes);
 app.use("/api/order", orderRoutes);
 
 // Manual admin trigger for auto-progression
-app.post("/api/admin/auto-progress-orders", async (req, res) => {
+app.post("/api/admin/auto-progress-orders", authAdmin, async (req, res) => {
   await autoProgressOrders();
   res.json({ success: true, message: "Orders auto-progressed" });
 });

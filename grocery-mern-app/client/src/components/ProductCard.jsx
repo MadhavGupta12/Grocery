@@ -20,7 +20,7 @@ const ProductCard = ({ product }) => {
   return (
     product && (
       <div
-        className={`relative bg-white border border-gray-100 rounded-2xl overflow-hidden card-shadow transition-all duration-200 flex flex-col w-44 min-w-44 ${
+        className={`relative bg-white border border-gray-100 rounded-2xl overflow-hidden card-shadow transition-all duration-200 flex flex-col w-[calc((100vw-44px)/2)] min-w-[calc((100vw-44px)/2)] sm:w-44 sm:min-w-44 ${
           isLowStock ? "opacity-60" : "hover:-translate-y-0.5"
         }`}
       >
@@ -32,7 +32,7 @@ const ProductCard = ({ product }) => {
               scrollTo(0, 0);
             }
           }}
-          className={`relative bg-[#f8f9fa] flex items-center justify-center h-40 px-4 pt-4 pb-2 ${!isLowStock ? "cursor-pointer" : ""}`}
+          className={`relative bg-[#f8f9fa] flex items-center justify-center h-36 sm:h-40 px-3 sm:px-4 pt-4 pb-2 ${!isLowStock ? "cursor-pointer" : ""}`}
         >
           {/* Discount Badge */}
           {discountPct > 0 && (
@@ -58,7 +58,7 @@ const ProductCard = ({ product }) => {
 
           {/* Product Image */}
           <img
-            className={`h-28 w-full object-contain transition-transform duration-300 ${!isLowStock ? "group-hover:scale-105" : "grayscale"}`}
+            className={`h-24 sm:h-28 w-full object-contain transition-transform duration-300 ${!isLowStock ? "group-hover:scale-105" : "grayscale"}`}
             src={getImageUrl(product.image?.[0])}
             alt={product.name}
             onError={(e) => {

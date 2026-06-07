@@ -51,8 +51,8 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="py-10 flex flex-col justify-between bg-white">
-      <form onSubmit={handleSubmit} className="md:p-10 p-4 space-y-5 max-w-lg">
+    <div className="py-6 md:py-10 flex flex-col justify-between bg-white">
+      <form onSubmit={handleSubmit} className="md:p-10 p-4 space-y-5 max-w-lg w-full">
         <div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-base font-medium">Product Image</p>
@@ -71,7 +71,7 @@ const AddProduct = () => {
           </div>
           <div className="flex flex-wrap items-center gap-3 mt-2">
             {autoImages ? (
-              <div className="flex items-center gap-3 rounded border border-gray-500/30 p-2">
+              <div className="flex w-full flex-col sm:flex-row sm:items-center gap-3 rounded border border-gray-500/30 p-2">
                 <img
                   className="h-24 w-24 object-contain bg-gray-50 rounded"
                   src={autoImagePreview}
@@ -79,7 +79,7 @@ const AddProduct = () => {
                   width={100}
                   height={100}
                 />
-                <p className="text-sm text-gray-500 max-w-64">
+                <p className="text-sm text-gray-500 sm:max-w-64">
                   The image updates from the product name and category. Upload manually if you need a branded pack shot.
                 </p>
               </div>
@@ -164,7 +164,7 @@ const AddProduct = () => {
           </select>
         </div>
         <div className="flex items-center gap-5 flex-wrap">
-          <div className="flex-1 flex flex-col gap-1 w-32">
+          <div className="flex-1 min-w-32 flex flex-col gap-1">
             <label className="text-base font-medium" htmlFor="product-price">
               Product Price
             </label>
@@ -178,7 +178,7 @@ const AddProduct = () => {
               required
             />
           </div>
-          <div className="flex-1 flex flex-col gap-1 w-32">
+          <div className="flex-1 min-w-32 flex flex-col gap-1">
             <label className="text-base font-medium" htmlFor="offer-price">
               Offer Price
             </label>
@@ -193,7 +193,7 @@ const AddProduct = () => {
             />
           </div>
         </div>
-        <button className="px-8 py-2.5 bg-indigo-500 text-white font-medium rounded">
+        <button className="w-full sm:w-auto px-8 py-2.5 bg-indigo-500 text-white font-medium rounded">
           ADD
         </button>
       </form>

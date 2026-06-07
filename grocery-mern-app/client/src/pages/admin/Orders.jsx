@@ -78,23 +78,23 @@ const Orders = () => {
   }, [axios]);
 
   return (
-    <div className="md:p-10 p-4 space-y-4 w-full">
+    <div className="md:p-10 p-4 space-y-4 w-full min-w-0">
       <h2 className="text-lg font-medium">Orders List</h2>
       {orders.map((order, index) => (
         <div
           key={index}
-          className="flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1.2fr] md:items-center gap-5 p-5 max-w-4xl rounded-md border border-gray-300 text-gray-800 bg-white"
+          className="flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1.2fr] md:items-center gap-5 p-4 sm:p-5 max-w-4xl rounded-md border border-gray-300 text-gray-800 bg-white"
         >
-          <div className="flex gap-5">
+          <div className="flex gap-4 sm:gap-5 min-w-0">
             <img
               className="w-12 h-12 object-cover opacity-60"
               src={getImageUrl(order.items[0]?.product?.image?.[0]) || boxIcon}
               alt="boxIcon"
             />
-            <div className="flex flex-col gap-1">
+            <div className="flex min-w-0 flex-col gap-1">
               {order.items.map((item, idx) => (
                 <div key={idx} className="flex flex-col justify-center">
-                  <p className="font-medium text-sm">
+                  <p className="font-medium text-sm break-words">
                     {item.product?.name || "Deleted Product"}{" "}
                     <span className={`text-indigo-500 ${item.quantity < 2 && "hidden"}`}>
                       x {item.quantity}
@@ -105,7 +105,7 @@ const Orders = () => {
             </div>
           </div>
 
-          <div className="text-sm">
+          <div className="text-sm break-words">
             <p className="font-medium mb-1">
               {order.address?.firstName || "N/A"} {order.address?.lastName || ""}
             </p>

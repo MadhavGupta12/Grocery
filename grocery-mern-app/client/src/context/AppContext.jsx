@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -9,7 +9,8 @@ axios.defaults.baseURL =
 // Attach Bearer Token to headers if cookies are blocked by cross-origin policies
 axios.interceptors.request.use(
   (config) => {
-    const isAdminRequest = config.url.includes("/admin") || config.url.includes("/product/add-product") || config.url.includes("/product/stock") || config.url.includes("/order/status");
+    const requestUrl = config.url || "";
+    const isAdminRequest = requestUrl.includes("/admin") || requestUrl.includes("/product/add-product") || requestUrl.includes("/product/stock") || requestUrl.includes("/order/status");
     const token = isAdminRequest
       ? localStorage.getItem("mapta_admin_token")
       : localStorage.getItem("mapta_user_token");
@@ -37,6 +38,18 @@ export const AppContextProvider = ({ children }) => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [wishlistIds, setWishlistIds] = useState([]);
 
+  const clearAdminSession = useCallback(() => {
+    localStorage.removeItem("mapta_admin_token");
+    setIsAdmin(false);
+  }, []);
+
+  const clearUserSession = useCallback(() => {
+    localStorage.removeItem("mapta_user_token");
+    setUser(null);
+    setCartItems({});
+    setWishlistIds([]);
+  }, []);
+
   // Debouncing effect for search queries
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -49,7 +62,7 @@ export const AppContextProvider = ({ children }) => {
   }, [searchQuery]);
 
   // check admin status
-  const fetchAdmin = async () => {
+  const fetchAdmin = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/admin/is-auth");
       if (data.success) {
@@ -58,12 +71,12 @@ export const AppContextProvider = ({ children }) => {
         setIsAdmin(false);
       }
     } catch {
-       setIsAdmin(false);
-     }
-  };
+      clearAdminSession();
+    }
+  }, [clearAdminSession]);
 
   // fetch user auth status ,user Data and cart items
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/user/is-auth");
       if (data.success) {
@@ -75,12 +88,12 @@ export const AppContextProvider = ({ children }) => {
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        // User is not logged in, ignore
+        clearUserSession();
       } else {
         toast.error(error.message);
       }
     }
-  };
+  }, [clearUserSession]);
 
   // toggle item in wishlist
   const toggleWishlist = async (productId) => {
@@ -104,7 +117,7 @@ export const AppContextProvider = ({ children }) => {
   };
 
   // fetch products
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/product/list");
       if (data.success) {
@@ -115,7 +128,7 @@ export const AppContextProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.message);
     }
-  };
+  }, []);
   // add product to cart
   const addToCart = (itemId) => {
     let cartData = structuredClone(cartItems || {}); // safeguard for undefined
@@ -173,7 +186,7 @@ export const AppContextProvider = ({ children }) => {
     fetchAdmin();
     fetchProducts();
     fetchUser();
-  }, []);
+  }, [fetchAdmin, fetchProducts, fetchUser]);
 
   // update database cart items
   useEffect(() => {
@@ -199,6 +212,8 @@ export const AppContextProvider = ({ children }) => {
     setUser,
     isAdmin,
     setIsAdmin,
+    clearAdminSession,
+    clearUserSession,
     showUserLogin,
     setShowUserLogin,
     products,

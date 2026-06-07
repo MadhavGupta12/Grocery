@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post("/login", adminLogin);
 router.get("/is-auth", authAdmin, checkAuth);
-router.get("/logout", authAdmin, adminLogout);
+router.get("/logout", adminLogout);
 router.get("/analytics", authAdmin, getAnalytics);
 router.get("/events", authAdmin, getRecentEvents);
 
