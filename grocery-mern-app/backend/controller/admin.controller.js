@@ -11,6 +11,29 @@ export const adminLogin = async (req, res) => {
       return res.status(400).json({ message: "Please fill all the fields", success: false });
     }
 
+    const sellerEmail = process.env.SELLER_EMAIL;
+    const sellerPassword = process.env.SELLER_PASSWORD;
+    const isConfiguredSeller =
+      sellerEmail &&
+      sellerPassword &&
+      email === sellerEmail &&
+      password === sellerPassword;
+
+    if (isConfiguredSeller) {
+      const token = jwt.sign({ role: "admin", email }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      res.cookie("adminToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.status(200).json({ message: "Login successful", success: true, token });
+    }
+
     const user = await User.findOne({ email });
     
     if (!user) {

@@ -13,6 +13,15 @@ export const authAdmin = async (req, res, next) => {
   }
   try {
     const decoded = jwt.verify(adminToken, process.env.JWT_SECRET);
+    if (
+      decoded.role === "admin" &&
+      decoded.email &&
+      decoded.email === process.env.SELLER_EMAIL
+    ) {
+      req.admin = decoded;
+      return next();
+    }
+
     const user = await User.findById(decoded.id);
 
     if (user && user.role === "admin") {
